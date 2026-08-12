@@ -56,7 +56,7 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
       status: filters.status,
       category: filters.category,
       page,
-      limit: 10,
+      limit: 12,
     }),
     [apiType],
   );
@@ -175,120 +175,60 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
         </Panel>
       </div>
 
-      <div className="ledger-layout">
-        <Panel title={`${income ? "Gelir" : "Gider"} Kayıtları`} className="table-panel">
-          <Filters
-            placeholder={income ? "Gelir ara..." : "Gider ara..."}
-            search={search}
-            onSearchChange={(value) => {
-              setSearch(value);
-              setPage(1);
-            }}
-            onSelectChange={(name, value) => {
-              setFilters((current) => ({ ...current, [name]: value }));
-              setPage(1);
-            }}
-            selects={[
-              {
-                name: "category",
-                placeholder: "Tüm Kategoriler",
-                value: filters.category,
-                options: (data?.categoryDistribution ?? []).map((item) => ({
-                  value: item.name,
-                  label: item.name,
-                })),
-              },
-              {
-                name: "status",
-                placeholder: "Tüm Durumlar",
-                value: filters.status,
-                options: STATUS_OPTIONS,
-              },
-            ]}
-          />
-          <DataTable
-            loading={listLoading}
-            headers={[
-              "Tarih",
-              `${income ? "Gelir" : "Gider"} No`,
-              "Açıklama",
-              "Kategori",
-              income ? "Müşteri / Alıcı" : "Tedarikçi",
-              "Ödeme Tipi",
-              "Tutar",
-              "Durum",
-            ]}
-            rows={rows}
-            pagination={
-              meta?.pagination
-                ? {
-                    page: meta.pagination.page,
-                    totalPages: meta.pagination.totalPages,
-                    total: meta.pagination.total,
-                  }
-                : undefined
-            }
-            onPageChange={setPage}
-          />
-        </Panel>
-
-        <div className="ledger-sidebar">
-          <Panel title={income ? "Yaklaşan Tahsilatlar" : "Yaklaşan Ödemeler"}>
-            <div className="agenda-list">
-              {!data && <SkeletonBlock rows={4} height={26} />}
-              {data?.upcoming.map((item) => (
-                <span key={item.id}>
-                  <time>{formatDate(item.date)}</time>
-                  <b>{item.title}</b>
-                  <small>{formatCurrency(item.amount)}</small>
-                </span>
-              ))}
-              {data?.upcoming.length === 0 && (
-                <span>
-                  <time>—</time>
-                  <b>Bekleyen kayıt yok</b>
-                  <small>Vadesi gelen işlem bulunmuyor.</small>
-                </span>
-              )}
-            </div>
-          </Panel>
-
-          <Panel title={`En Çok ${income ? "Gelir Getiren" : "Gider Oluşturan"} Kalemler`}>
-            <div className="progress-list">
-              {!data && <SkeletonBlock rows={5} height={22} />}
-              {data?.topCategories.map((item) => (
-                <span key={item.name}>
-                  <Banknote />
-                  <b>{item.name}</b>
-                  <i>
-                    <em style={{ width: `${item.percent}%` }} />
-                  </i>
-                  <small>{formatCurrency(item.value)}</small>
-                </span>
-              ))}
-            </div>
-          </Panel>
-        </div>
-      </div>
-
-      <Panel title="Hızlı İşlemler">
-        <div className="quick-actions compact-quick-actions">
-          {[
-            ["Yeni Kayıt Ekle", Banknote],
-            ["Fatura Oluştur", FileBarChart],
-            [income ? "Tahsilat Gir" : "Ödeme Gir", CheckCircle2],
-            ["Rapor Al", TrendingUp],
-          ].map(([label, Icon]) => {
-            const ItemIcon = Icon as typeof Banknote;
-            return (
-              <button key={label as string}>
-                <ItemIcon />
-                <b>+</b>
-                <span>{label as string}</span>
-              </button>
-            );
-          })}
-        </div>
+      <Panel title={`${income ? "Gelir" : "Gider"} Kayıtları`} className="table-panel">
+        <Filters
+          placeholder={income ? "Gelir ara..." : "Gider ara..."}
+          search={search}
+          onSearchChange={(value) => {
+            setSearch(value);
+            setPage(1);
+          }}
+          onSelectChange={(name, value) => {
+            setFilters((current) => ({ ...current, [name]: value }));
+            setPage(1);
+          }}
+          selects={[
+            {
+              name: "category",
+              placeholder: "Tüm Kategoriler",
+              value: filters.category,
+              options: (data?.categoryDistribution ?? []).map((item) => ({
+                value: item.name,
+                label: item.name,
+              })),
+            },
+            {
+              name: "status",
+              placeholder: "Tüm Durumlar",
+              value: filters.status,
+              options: STATUS_OPTIONS,
+            },
+          ]}
+        />
+        <DataTable
+          loading={listLoading}
+          headers={[
+            "Tarih",
+            `${income ? "Gelir" : "Gider"} No`,
+            "Açıklama",
+            "Kategori",
+            income ? "Müşteri / Alıcı" : "Tedarikçi",
+            "Ödeme Tipi",
+            "Tutar",
+            "Durum",
+          ]}
+          rows={rows}
+          pagination={
+            meta?.pagination
+              ? {
+                  page: meta.pagination.page,
+                  totalPages: meta.pagination.totalPages,
+                  total: meta.pagination.total,
+                }
+              : undefined
+          }
+          onPageChange={setPage}
+        />
       </Panel>
     </div>
   );

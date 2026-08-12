@@ -1610,16 +1610,20 @@ img {
 
 .data-table th,
 .data-table td {
-  padding: 10px 10px;
+  padding: 13px 14px;
   border-bottom: 1px solid var(--line);
   text-align: left;
-  font-size: 9px;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .data-table th {
   color: var(--muted);
   background: var(--surface-2);
-  font-weight: 550;
+  font-weight: 650;
+  font-size: 0.83rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .data-table tbody tr {
@@ -1651,7 +1655,7 @@ img {
 
 .primary-cell small {
   color: var(--muted);
-  font-size: 8px;
+  font-size: 0.78rem;
 }
 
 .table-actions {
@@ -1660,8 +1664,8 @@ img {
 }
 
 .table-actions button {
-  width: 25px;
-  height: 25px;
+  width: 29px;
+  height: 29px;
   display: grid;
   place-items: center;
   padding: 0;
@@ -1671,17 +1675,18 @@ img {
 }
 
 .table-actions svg {
-  width: 12px;
+  width: 15px;
 }
 
 .table-footer {
-  min-height: 46px;
+  min-height: 52px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
+  padding: 10px 16px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 0.85rem;
+  font-weight: 500;
 }
 
 .pagination {
@@ -1690,13 +1695,15 @@ img {
 }
 
 .pagination button {
-  min-width: 27px;
-  height: 27px;
+  min-width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
   border: 1px solid var(--line);
   border-radius: 6px;
   background: var(--surface);
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .pagination button.is-active {
@@ -1705,15 +1712,15 @@ img {
 }
 
 .pagination svg {
-  width: 12px;
+  width: 14px;
 }
 
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 4px 8px;
+  padding: 4px 10px;
   border-radius: 6px;
-  font-size: 8px;
+  font-size: 0.78rem;
   font-weight: 650;
 }
 
