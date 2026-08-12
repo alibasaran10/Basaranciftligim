@@ -38,6 +38,11 @@ export const listTransactionsQuerySchema = z
     status: z.nativeEnum(FINANCE_STATUS).optional(),
     category: z.string().trim().max(120).optional(),
     days: z.coerce.number().int().min(1).max(3650).optional(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+    minAmount: z.coerce.number().optional(),
+    maxAmount: z.coerce.number().optional(),
+    sortBy: z.string().optional(),
     page: z.coerce.number().int().min(1).optional(),
     limit: z.coerce.number().int().min(1).max(200).optional(),
   })
