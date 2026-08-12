@@ -16,11 +16,11 @@ export function ContactForm() {
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Sadece rakamlara izin ver (harfler engellenir), max 12 hane
-    const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 12);
+    // Sadece rakamlara izin ver (harfler engellenir), tam 10 hane
+    const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
     setPhone(value);
-    if (value.length > 0 && (value.length < 10 || value.length > 12)) {
-      setPhoneError("Telefon numarası 10, 11 veya 12 haneli olmalıdır.");
+    if (value.length > 0 && value.length < 10) {
+      setPhoneError("Telefon numarası 10 haneli olmalıdır.");
     } else {
       setPhoneError("");
     }
@@ -28,8 +28,8 @@ export function ContactForm() {
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (phone.length < 10 || phone.length > 12) {
-      setPhoneError("Telefon numarası 10, 11 veya 12 haneli olmalıdır.");
+    if (phone.length !== 10) {
+      setPhoneError("Telefon numarası 10 haneli olmalıdır.");
       return;
     }
     setSent(true);
@@ -72,16 +72,19 @@ export function ContactForm() {
         </label>
         <label>
           Telefon
-          <input
-            required
-            name="phone"
-            type="tel"
-            inputMode="numeric"
-            value={phone}
-            onChange={handlePhoneChange}
-            maxLength={12}
-            placeholder="5XX1234567 (10-12 hane)"
-          />
+          <div className="phone-input-wrapper">
+            <span className="phone-prefix">+90</span>
+            <input
+              required
+              name="phone"
+              type="tel"
+              inputMode="numeric"
+              value={phone}
+              onChange={handlePhoneChange}
+              maxLength={10}
+              placeholder="5XX XXX XX XX"
+            />
+          </div>
           {phoneError && (
             <small style={{ color: "#ef4444", marginTop: "4px", display: "block" }}>
               {phoneError}
