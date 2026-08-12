@@ -5,8 +5,8 @@
   --surface: #ffffff;
   --surface-2: #f8faf9;
   --surface-3: #eef5f1;
-  --text: #101b17;
-  --muted: #66716c;
+  --text: #0b1713;
+  --muted: #56645e;
   --line: #dfe7e2;
   --line-strong: #ccd8d1;
   --green-950: #003d32;
@@ -31,8 +31,8 @@ html[data-theme="dark"] {
   --surface: #111d18;
   --surface-2: #14231d;
   --surface-3: #183026;
-  --text: #eef7f2;
-  --muted: #9cacA4;
+  --text: #f4fbf6;
+  --muted: #a0b2a8;
   --line: #273a31;
   --line-strong: #385044;
   --green-100: #163b2a;
@@ -56,9 +56,13 @@ body {
   overflow-x: hidden;
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font-geist-sans), Arial, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   font-size: 14px;
   line-height: 1.45;
+  font-weight: 450;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 button,
