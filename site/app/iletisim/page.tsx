@@ -22,7 +22,7 @@ const contactCards = [
   [Phone, "Satış & Demo", "+90 850 255 00 55", "Hafta içi 09.00 – 18.00"],
   [Mail, "E-posta", "info@surum.com", "Bir iş günü içinde yanıt"],
   [Headphones, "Teknik Destek", "destek@surum.com", "7/24 kritik olay desteği"],
-  [MapPin, "Merkez Ofis", "Konya / Türkiye", "Teknoloji Geliştirme Bölgesi"],
+  [MapPin, "Merkez Ofis", "Balıkesir / Türkiye", "Teknoloji Geliştirme Bölgesi"],
 ] as const;
 
 export default function ContactPage() {

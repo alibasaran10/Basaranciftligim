@@ -74,7 +74,7 @@ export function SiteFooter() {
             <Mail size={15} /> info@surum.com
           </a>
           <span>
-            <MapPin size={15} /> Teknoloji Geliştirme Bölgesi, Konya / Türkiye
+            <MapPin size={15} /> Teknoloji Geliştirme Bölgesi, Balıkesir / Türkiye
           </span>
         </div>
       </div>
