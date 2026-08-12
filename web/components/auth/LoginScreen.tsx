@@ -136,7 +136,7 @@ export function LoginScreen() {
                   type="email"
                   required
                   autoComplete="username"
-                  defaultValue="info@yesilvadiciftligi.com"
+                  defaultValue="info@basaranciftligi.com"
                   placeholder="ornek@mail.com"
                 />
               </span>

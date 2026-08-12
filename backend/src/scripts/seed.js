@@ -151,8 +151,8 @@ async function wipe() {
 
 async function seedFarmAndUsers() {
   const owner = await User.create({
-    name: 'Mehmet Çiftçi',
-    email: 'info@yesilvadiciftligi.com',
+    name: 'Ali Başaran',
+    email: 'info@basaranciftligi.com',
     password: 'Parola123',
     role: ROLES.ADMIN,
     phone: '+90 555 123 45 67',
@@ -165,15 +165,15 @@ async function seedFarmAndUsers() {
   });
 
   const farm = await Farm.create({
-    name: 'Yeşil Vadi Çiftliği',
+    name: 'Başaran Çiftliği',
     owner: owner._id,
-    location: { type: 'Point', coordinates: [37.0179, 39.7477] }, // Sivas merkez
-    address: 'Karaova Mah. 123. Sok. No:45 Merkez / Sivas',
+    location: { type: 'Point', coordinates: [27.8826, 39.6484] }, // Balıkesir merkez
+    address: 'Atatürk Mah. 10. Sok. No:45 Merkez / Balıkesir',
     timezone: 'Europe/Istanbul',
     businessType: 'Büyükbaş Hayvancılık',
     taxNumber: '1234567890',
     phone: '+90 555 123 45 67',
-    email: 'info@yesilvadiciftligi.com',
+    email: 'info@basaranciftligi.com',
     mapImageUrl: IMG.farmMap,
     subscription: {
       plan: 'PROFESYONEL',
@@ -220,7 +220,7 @@ async function seedFarmAndUsers() {
   const team = await User.create([
     {
       name: 'Hasan Demir',
-      email: 'hasan@yesilvadiciftligi.com',
+      email: 'hasan@basaranciftligi.com',
       password: 'Parola123',
       role: ROLES.FARMER,
       farm: farm._id,
@@ -232,7 +232,7 @@ async function seedFarmAndUsers() {
     },
     {
       name: 'Ayşe Yılmaz',
-      email: 'ayse@yesilvadiciftligi.com',
+      email: 'ayse@basaranciftligi.com',
       password: 'Parola123',
       role: ROLES.FARMER,
       farm: farm._id,
@@ -244,7 +244,7 @@ async function seedFarmAndUsers() {
     },
     {
       name: 'Ali Yıldız',
-      email: 'ali@yesilvadiciftligi.com',
+      email: 'ali@basaranciftligi.com',
       password: 'Parola123',
       role: ROLES.VIEWER,
       farm: farm._id,
@@ -1188,7 +1188,7 @@ const EVENT_TEMPLATES = [
   { type: EVENT_TYPE.HARVEST, title: 'Hasat', location: 'Kuzey Tarlası', assignee: 'Hasan Demir', hour: 14 },
   { type: EVENT_TYPE.IRRIGATION, title: 'Sulama', location: 'Dere Boyu', assignee: 'Hasan Demir', hour: 16 },
   { type: EVENT_TYPE.FERTILIZING, title: 'Gübreleme', location: 'Güney Tarlası', assignee: 'Hasan Demir', hour: 10 },
-  { type: EVENT_TYPE.STOCK_COUNT, title: 'Stok Sayımı', location: 'Silo 1', assignee: 'Mehmet Çiftçi', hour: 15 },
+  { type: EVENT_TYPE.STOCK_COUNT, title: 'Stok Sayımı', location: 'Silo 1', assignee: 'Ali Başaran', hour: 15 },
   { type: EVENT_TYPE.MAINTENANCE, title: 'Ekipman Bakımı', location: 'Makine Parkı', assignee: 'Ali Yıldız', hour: 16 },
   { type: EVENT_TYPE.CAMERA_CHECK, title: 'Kamera Kontrolü', location: 'Tüm kameralar', assignee: 'Ali Yıldız', hour: 14 },
 ];
@@ -1276,7 +1276,7 @@ async function seedEvents(farm, owner, animals, fields) {
       priority: ALERT_SEVERITY.MEDIUM,
       startAt: new Date(YEAR, NOW.getMonth(), today, 16, 0),
       location: 'Depo A',
-      assignedLabel: 'Mehmet Çiftçi',
+      assignedLabel: 'Ali Başaran',
       createdBy: owner._id,
     }
   );
@@ -1368,7 +1368,7 @@ async function seedAlerts(farm, animals, fields, cameras, stockItems, devices) {
       title: 'Kızgınlık / Stres Alarmı',
       animal: estrusAnimal?._id,
       message: `${estrusAnimal?.earTag} küpeli inekte anormal hareketlilik tespit edildi.`,
-      assignedLabel: 'Mehmet Çiftçi',
+      assignedLabel: 'Ali Başaran',
       cameraVerified: true,
       imageUrl: IMG.cameraBarn,
       createdAt: daysFromNow(0, 10, 24),
@@ -1397,7 +1397,7 @@ async function seedAlerts(farm, animals, fields, cameras, stockItems, devices) {
       title: 'Sıcaklık Uyarısı',
       field: fields[0]?._id,
       message: 'Kuzey Tarlası · Silo 2 sıcaklık eşiği aşıldı.',
-      assignedLabel: 'Mehmet Çiftçi',
+      assignedLabel: 'Ali Başaran',
       createdAt: daysFromNow(0, 6, 40),
       dedupeKey: 'seed-temp-1',
     },
@@ -1515,7 +1515,7 @@ async function seedAlerts(farm, animals, fields, cameras, stockItems, devices) {
     { type: ALERT_TYPE.VACCINATION_DUE, source: ALERT_SOURCE.HERD, title: 'Aşılama Hatırlatması', severity: ALERT_SEVERITY.MEDIUM },
   ];
 
-  const assignees = ['Mehmet Çiftçi', 'Ayşe Yılmaz', 'Hasan Demir', 'Ali Yıldız', 'Teknik Ekip'];
+  const assignees = ['Ali Başaran', 'Ayşe Yılmaz', 'Hasan Demir', 'Ali Yıldız', 'Teknik Ekip'];
 
   for (let i = 0; i < 116; i += 1) {
     const tpl = historyTypes[i % historyTypes.length];
@@ -1626,7 +1626,7 @@ async function run() {
   console.log(`Raporlar     : ${reportCount}`);
   console.log(`Alarmlar     : ${alertCount}`);
   console.log(`Telemetri    : ${telemetryCount} kayit`);
-  console.log('\nGiris: info@yesilvadiciftligi.com / Parola123');
+  console.log('\nGiris: info@basaranciftligi.com / Parola123');
   console.log('\nCihaz API anahtarlari (simulasyon icin, x-device-key):');
   for (const d of devicesInfo) {
     console.log(`  ${d.mac}  (${d.animal})  ->  ${d.apiKey}`);
