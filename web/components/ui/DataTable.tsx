@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Eye, MoreVertical, Pencil } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, Pencil, Trash2 } from "lucide-react";
 
 import { formatNumber } from "@/lib/format";
 import { useAppDispatch } from "@/store/hooks";
@@ -39,6 +39,9 @@ export function DataTable({
   loading = false,
   pagination,
   onPageChange,
+  onView,
+  onEdit,
+  onDelete,
   emptyMessage = "Kayıt bulunamadı.",
 }: {
   headers: string[];
@@ -47,6 +50,9 @@ export function DataTable({
   loading?: boolean;
   pagination?: Pagination;
   onPageChange?: (page: number) => void;
+  onView?: (index: number) => void;
+  onEdit?: (index: number) => void;
+  onDelete?: (index: number) => void;
   emptyMessage?: string;
 }) {
   const dispatch = useAppDispatch();
@@ -118,19 +124,31 @@ export function DataTable({
                 <div className="table-actions">
                   <button
                     aria-label="Görüntüle"
-                    onClick={() => dispatch(showToast("Kayıt görüntüleniyor."))}
+                    onClick={() => {
+                      if (onView) onView(rowIndex);
+                      else dispatch(showToast("Kayıt görüntüleniyor."));
+                    }}
                   >
                     <Eye />
                   </button>
                   <button
                     aria-label="Düzenle"
-                    onClick={() => dispatch(showToast("Düzenleme modu açıldı."))}
+                    onClick={() => {
+                      if (onEdit) onEdit(rowIndex);
+                      else dispatch(showToast("Düzenleme modu açıldı."));
+                    }}
                   >
                     <Pencil />
                   </button>
-                  <button aria-label="Diğer işlemler">
-                    <MoreVertical />
-                  </button>
+                  {onDelete && (
+                    <button
+                      aria-label="Sil"
+                      style={{ color: "var(--red)" }}
+                      onClick={() => onDelete(rowIndex)}
+                    >
+                      <Trash2 />
+                    </button>
+                  )}
                 </div>
               </td>
             </tr>

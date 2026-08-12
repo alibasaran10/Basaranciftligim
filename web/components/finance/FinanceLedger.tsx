@@ -5,12 +5,12 @@ import {
   CalendarDays,
   CheckCircle2,
   Clock3,
-  FileBarChart,
   ShoppingCart,
   TrendingDown,
   TrendingUp,
+  X,
 } from "lucide-react";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 
 import { ErrorState, SkeletonBlock } from "@/components/ui/AsyncState";
 import { BarsChart, DonutChart, RingProgress } from "@/components/ui/Charts";
@@ -19,7 +19,7 @@ import { Filters } from "@/components/ui/Filters";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Panel } from "@/components/ui/Panel";
 import { StatCard } from "@/components/ui/StatCard";
-import { withQuery } from "@/lib/api";
+import { api, withQuery } from "@/lib/api";
 import {
   formatChange,
   formatCurrency,
@@ -29,6 +29,8 @@ import {
 } from "@/lib/format";
 import type { FinanceLedgerData, FinanceTransactionRow } from "@/lib/types";
 import { useApi } from "@/lib/useApi";
+import { useAppDispatch } from "@/store/hooks";
+import { showToast } from "@/store/slices/uiSlice";
 
 const STATUS_OPTIONS = [
   { value: "tamamlandi", label: "Tamamlandı" },
@@ -37,6 +39,7 @@ const STATUS_OPTIONS = [
 ];
 
 export function FinanceLedger({ type }: { type: "income" | "expense" }) {
+  const dispatch = useAppDispatch();
   const income = type === "income";
   const apiType = income ? "gelir" : "gider";
 
@@ -44,22 +47,48 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [page, setPage] = useState(1);
 
-  const { data, loading, error, refetch } = useApi<FinanceLedgerData>(
+  // Modals state
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedViewTx, setSelectedViewTx] = useState<FinanceTransactionRow | null>(null);
+  const [selectedEditTx, setSelectedEditTx] = useState<FinanceTransactionRow | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Form states for Add/Edit
+  const [editForm, setEditForm] = useState({
+    amount: "",
+    status: "tamamlandi",
+    description: "",
+    category: income ? "Süt Satışları" : "Yem",
+    counterparty: "",
+    paymentMethod: "banka_havalesi",
+  });
+
+  const { data, loading, error, refetch: refetchLedger } = useApi<FinanceLedgerData>(
     withQuery("/finance/ledger", { type: apiType }),
     [apiType],
   );
 
-  const { data: transactions, meta, loading: listLoading } = useApi<FinanceTransactionRow[]>(
+  const {
+    data: transactions,
+    meta,
+    loading: listLoading,
+    refetch: refetchTransactions,
+  } = useApi<FinanceTransactionRow[]>(
     withQuery("/finance/transactions", {
       type: apiType,
       q: search || undefined,
-      status: filters.status,
-      category: filters.category,
+      status: filters.status || undefined,
+      category: filters.category || undefined,
       page,
       limit: 12,
     }),
-    [apiType],
+    [apiType, search, filters.status, filters.category, page],
   );
+
+  const refetchAll = () => {
+    refetchLedger();
+    refetchTransactions();
+  };
 
   const totals = data?.totals;
 
@@ -68,11 +97,105 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
     tx.code,
     tx.description,
     tx.category,
-    tx.counterparty,
-    tx.paymentMethodLabel,
+    tx.counterparty || "—",
+    tx.paymentMethodLabel || tx.paymentMethod,
     formatCurrency(tx.amount),
-    tx.statusLabel,
+    tx.statusLabel || tx.status,
   ]);
+
+  const handleOpenAddModal = () => {
+    setEditForm({
+      amount: "",
+      status: "tamamlandi",
+      description: "",
+      category: income ? "Süt Satışları" : "Yem",
+      counterparty: "",
+      paymentMethod: "banka_havalesi",
+    });
+    setShowAddModal(true);
+  };
+
+  const handleOpenEditModal = (tx: FinanceTransactionRow) => {
+    setSelectedEditTx(tx);
+    setEditForm({
+      amount: String(tx.amount || ""),
+      status: tx.status || "tamamlandi",
+      description: tx.description || "",
+      category: tx.category || (income ? "Süt Satışları" : "Yem"),
+      counterparty: tx.counterparty || "",
+      paymentMethod: tx.paymentMethod || "banka_havalesi",
+    });
+  };
+
+  const handleAddSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const numAmount = parseFloat(editForm.amount.replace(/[^0-9.]/g, ""));
+    if (isNaN(numAmount) || numAmount <= 0) {
+      dispatch(showToast("Geçerli bir tutar girin."));
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await api.post("/finance/transactions", {
+        type: apiType,
+        amount: numAmount,
+        status: editForm.status,
+        description: editForm.description,
+        category: editForm.category,
+        counterparty: editForm.counterparty,
+        paymentMethod: editForm.paymentMethod,
+        date: new Date().toISOString(),
+      });
+      dispatch(showToast(`${income ? "Gelir" : "Gider"} kaydı başarıyla eklendi.`));
+      setShowAddModal(false);
+      refetchAll();
+    } catch {
+      dispatch(showToast("Kayıt eklenirken bir hata oluştu."));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleEditSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!selectedEditTx) return;
+    const numAmount = parseFloat(editForm.amount.replace(/[^0-9.]/g, ""));
+    if (isNaN(numAmount) || numAmount <= 0) {
+      dispatch(showToast("Geçerli bir tutar girin."));
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await api.patch(`/finance/transactions/${selectedEditTx.id}`, {
+        amount: numAmount,
+        status: editForm.status,
+        description: editForm.description,
+        category: editForm.category,
+        counterparty: editForm.counterparty,
+        paymentMethod: editForm.paymentMethod,
+      });
+      dispatch(showToast("İşlem kaydı başarıyla güncellendi."));
+      setSelectedEditTx(null);
+      refetchAll();
+    } catch {
+      dispatch(showToast("Kayıt güncellenirken bir hata oluştu."));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteSubmit = async (tx: FinanceTransactionRow) => {
+    if (!confirm(`${tx.code} kodlu kaydı silmek istediğinize emin misiniz?`)) return;
+    try {
+      await api.delete(`/finance/transactions/${tx.id}`);
+      dispatch(showToast("Kayıt silindi."));
+      setSelectedViewTx(null);
+      setSelectedEditTx(null);
+      refetchAll();
+    } catch {
+      dispatch(showToast("Kayıt silinemedi."));
+    }
+  };
 
   return (
     <div className="page-stack page-enter">
@@ -83,9 +206,10 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
           income ? "gelir kaynaklarını ve tahsilatlarını" : "gider kalemlerini ve ödemelerini"
         } yönetin.`}
         primaryLabel={income ? "Yeni Gelir Ekle" : "Yeni Gider Ekle"}
+        onPrimaryClick={handleOpenAddModal}
       />
 
-      {error && <ErrorState message={error} onRetry={refetch} />}
+      {error && <ErrorState message={error} onRetry={refetchAll} />}
 
       <div className="stats-grid stats-grid-6">
         <StatCard
@@ -177,7 +301,7 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
 
       <Panel title={`${income ? "Gelir" : "Gider"} Kayıtları`} className="table-panel">
         <Filters
-          placeholder={income ? "Gelir ara..." : "Gider ara..."}
+          placeholder={income ? "Gelir ara (Açıklama, Kod, Alıcı)..." : "Gider ara (Açıklama, Kod, Tedarikçi)..."}
           search={search}
           onSearchChange={(value) => {
             setSearch(value);
@@ -228,8 +352,472 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
               : undefined
           }
           onPageChange={setPage}
+          onView={(index) => {
+            const tx = transactions?.[index];
+            if (tx) setSelectedViewTx(tx);
+          }}
+          onEdit={(index) => {
+            const tx = transactions?.[index];
+            if (tx) handleOpenEditModal(tx);
+          }}
+          onDelete={(index) => {
+            const tx = transactions?.[index];
+            if (tx) handleDeleteSubmit(tx);
+          }}
         />
       </Panel>
+
+      {/* MODAL 1: Görüntüleme Modalı (View Modal) */}
+      {selectedViewTx && (
+        <div
+          className="modal-backdrop"
+          onClick={() => setSelectedViewTx(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.55)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 999,
+          }}
+        >
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "var(--surface)",
+              padding: "26px",
+              borderRadius: "16px",
+              maxWidth: "480px",
+              width: "90%",
+              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.35)",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <div>
+                <span className="breadcrumb" style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
+                  {selectedViewTx.code}
+                </span>
+                <h3 style={{ margin: "2px 0 0", fontSize: "18px", fontWeight: 700 }}>
+                  İşlem Detayları
+                </h3>
+              </div>
+              <button
+                className="icon-button"
+                onClick={() => setSelectedViewTx(null)}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text)" }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: "grid", gap: "12px", fontSize: "0.9rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid var(--line)", paddingBottom: "8px" }}>
+                <span style={{ color: "var(--muted)" }}>Tarih</span>
+                <strong>{formatDate(selectedViewTx.date)}</strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid var(--line)", paddingBottom: "8px" }}>
+                <span style={{ color: "var(--muted)" }}>Açıklama</span>
+                <strong>{selectedViewTx.description || "—"}</strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid var(--line)", paddingBottom: "8px" }}>
+                <span style={{ color: "var(--muted)" }}>Kategori</span>
+                <strong>{selectedViewTx.category}</strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid var(--line)", paddingBottom: "8px" }}>
+                <span style={{ color: "var(--muted)" }}>{income ? "Müşteri / Alıcı" : "Tedarikçi"}</span>
+                <strong>{selectedViewTx.counterparty || "—"}</strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid var(--line)", paddingBottom: "8px" }}>
+                <span style={{ color: "var(--muted)" }}>Ödeme Yöntemi</span>
+                <strong>{selectedViewTx.paymentMethodLabel || selectedViewTx.paymentMethod}</strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid var(--line)", paddingBottom: "8px" }}>
+                <span style={{ color: "var(--muted)" }}>Tutar</span>
+                <strong style={{ fontSize: "1.1rem", color: income ? "var(--green-600)" : "var(--red)" }}>
+                  {formatCurrency(selectedViewTx.amount)}
+                </strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ color: "var(--muted)" }}>Durum</span>
+                <strong>{selectedViewTx.statusLabel || selectedViewTx.status}</strong>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "20px" }}>
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={() => {
+                  const tx = selectedViewTx;
+                  setSelectedViewTx(null);
+                  handleOpenEditModal(tx);
+                }}
+              >
+                Düzenle
+              </button>
+              <button
+                type="button"
+                className="button button-primary"
+                onClick={() => setSelectedViewTx(null)}
+              >
+                Kapat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: Yeni Kayıt Ekle Modalı (Add Modal) */}
+      {showAddModal && (
+        <div
+          className="modal-backdrop"
+          onClick={() => setShowAddModal(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.55)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 999,
+          }}
+        >
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "var(--surface)",
+              padding: "26px",
+              borderRadius: "16px",
+              maxWidth: "500px",
+              width: "90%",
+              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.35)",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 700 }}>
+                Yeni {income ? "Gelir" : "Gider"} Kaydı Ekleyin
+              </h3>
+              <button
+                className="icon-button"
+                onClick={() => setShowAddModal(false)}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text)" }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    Tutar (TL) *
+                  </label>
+                  <input
+                    required
+                    type="number"
+                    step="0.01"
+                    value={editForm.amount}
+                    onChange={(e) => setEditForm({ ...editForm, amount: e.target.value })}
+                    placeholder="Örn: 15000"
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit", fontWeight: 600 }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    Durum
+                  </label>
+                  <select
+                    value={editForm.status}
+                    onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                  >
+                    <option value="tamamlandi">{income ? "Tahsil Edildi" : "Ödendi"}</option>
+                    <option value="beklemede">Beklemede</option>
+                    <option value="kismi">Kısmi Ödeme</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                  Açıklama *
+                </label>
+                <input
+                  required
+                  type="text"
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  placeholder={income ? "Örn: Günlük Süt Satışı" : "Örn: 50 Torba Kesif Yem Alımı"}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    Kategori
+                  </label>
+                  <select
+                    value={editForm.category}
+                    onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                  >
+                    {income ? (
+                      <>
+                        <option>Süt Satışları</option>
+                        <option>Hayvan Satışı</option>
+                        <option>Mahsul Satışı</option>
+                        <option>Devlet Teşviki / Hibe</option>
+                        <option>Diğer Gelirler</option>
+                      </>
+                    ) : (
+                      <>
+                        <option>Yem</option>
+                        <option>Gübre</option>
+                        <option>İlaç / Aşılama</option>
+                        <option>Tohum</option>
+                        <option>Yakıt / Mazot</option>
+                        <option>Veteriner Hizm.</option>
+                        <option>Ekipman / Bakım</option>
+                        <option>Diğer Giderler</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    {income ? "Müşteri / Alıcı" : "Tedarikçi"}
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.counterparty}
+                    onChange={(e) => setEditForm({ ...editForm, counterparty: e.target.value })}
+                    placeholder={income ? "Örn: Mandıra A.Ş." : "Örn: Yem Sanayi A.Ş."}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                  Ödeme Yöntemi
+                </label>
+                <select
+                  value={editForm.paymentMethod}
+                  onChange={(e) => setEditForm({ ...editForm, paymentMethod: e.target.value })}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                >
+                  <option value="banka_havalesi">Banka Havalesi</option>
+                  <option value="eft">EFT</option>
+                  <option value="nakit">Nakit</option>
+                  <option value="kredi_karti">Kredi Kartı</option>
+                  <option value="cek">Çek</option>
+                </select>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "12px" }}>
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  onClick={() => setShowAddModal(false)}
+                >
+                  İptal
+                </button>
+                <button type="submit" className="button button-primary" disabled={submitting}>
+                  {submitting ? "Kaydediliyor…" : income ? "Geliri Kaydet" : "Gideri Kaydet"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: Düzenleme Modalı (Edit Modal) */}
+      {selectedEditTx && (
+        <div
+          className="modal-backdrop"
+          onClick={() => setSelectedEditTx(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.55)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 999,
+          }}
+        >
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "var(--surface)",
+              padding: "26px",
+              borderRadius: "16px",
+              maxWidth: "500px",
+              width: "90%",
+              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.35)",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <div>
+                <span className="breadcrumb" style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
+                  {selectedEditTx.code}
+                </span>
+                <h3 style={{ margin: "2px 0 0", fontSize: "18px", fontWeight: 700 }}>
+                  İşlem Kaydını Düzenle
+                </h3>
+              </div>
+              <button
+                className="icon-button"
+                onClick={() => setSelectedEditTx(null)}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text)" }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    Tutar (TL) *
+                  </label>
+                  <input
+                    required
+                    type="number"
+                    step="0.01"
+                    value={editForm.amount}
+                    onChange={(e) => setEditForm({ ...editForm, amount: e.target.value })}
+                    placeholder="Örn: 15000"
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit", fontWeight: 600 }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    Durum
+                  </label>
+                  <select
+                    value={editForm.status}
+                    onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                  >
+                    <option value="tamamlandi">{income ? "Tahsil Edildi" : "Ödendi"}</option>
+                    <option value="beklemede">Beklemede</option>
+                    <option value="kismi">Kısmi Ödeme</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                  Açıklama *
+                </label>
+                <input
+                  required
+                  type="text"
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  placeholder={income ? "Örn: Günlük Süt Satışı" : "Örn: 50 Torba Kesif Yem Alımı"}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    Kategori
+                  </label>
+                  <select
+                    value={editForm.category}
+                    onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                  >
+                    {income ? (
+                      <>
+                        <option>Süt Satışları</option>
+                        <option>Hayvan Satışı</option>
+                        <option>Mahsul Satışı</option>
+                        <option>Devlet Teşviki / Hibe</option>
+                        <option>Diğer Gelirler</option>
+                      </>
+                    ) : (
+                      <>
+                        <option>Yem</option>
+                        <option>Gübre</option>
+                        <option>İlaç / Aşılama</option>
+                        <option>Tohum</option>
+                        <option>Yakıt / Mazot</option>
+                        <option>Veteriner Hizm.</option>
+                        <option>Ekipman / Bakım</option>
+                        <option>Diğer Giderler</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    {income ? "Müşteri / Alıcı" : "Tedarikçi"}
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.counterparty}
+                    onChange={(e) => setEditForm({ ...editForm, counterparty: e.target.value })}
+                    placeholder={income ? "Örn: Mandıra A.Ş." : "Örn: Yem Sanayi A.Ş."}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                  Ödeme Yöntemi
+                </label>
+                <select
+                  value={editForm.paymentMethod}
+                  onChange={(e) => setEditForm({ ...editForm, paymentMethod: e.target.value })}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                >
+                  <option value="banka_havalesi">Banka Havalesi</option>
+                  <option value="eft">EFT</option>
+                  <option value="nakit">Nakit</option>
+                  <option value="kredi_karti">Kredi Kartı</option>
+                  <option value="cek">Çek</option>
+                </select>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px" }}>
+                <button
+                  type="button"
+                  style={{ color: "var(--red)", background: "none", border: "none", cursor: "pointer", fontSize: "0.85rem" }}
+                  onClick={() => handleDeleteSubmit(selectedEditTx)}
+                >
+                  Kaydı Sil
+                </button>
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <button
+                    type="button"
+                    className="button button-secondary"
+                    onClick={() => setSelectedEditTx(null)}
+                  >
+                    İptal
+                  </button>
+                  <button type="submit" className="button button-primary" disabled={submitting}>
+                    {submitting ? "Kaydediliyor…" : "Güncelle"}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
