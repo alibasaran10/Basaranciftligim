@@ -99,11 +99,11 @@ export function ContactForm() {
           İşletme Türü
           <select defaultValue="" name="business">
             <option value="" disabled>Seçiniz</option>
-            <option>Büyükbaş hayvancılık</option>
-            <option>Küçükbaş hayvancılık</option>
-            <option>Kanatlı Hayvan</option>
-            <option>Bitkisel üretim</option>
-            <option>Entegre işletme</option>
+            <option>Büyükbaş Hayvancılık</option>
+            <option>Küçükbaş Hayvancılık</option>
+            <option>Kanatlı Hayvancılık</option>
+            <option>Bitkisel Üretim</option>
+            <option>Entegre İşletme</option>
             <option>Diğer</option>
           </select>
         </label>
