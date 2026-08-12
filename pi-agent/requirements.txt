@@ -1,0 +1,17 @@
+# Saha kamera ajani bagimliliklari
+#
+# ZORUNLU
+websockets>=12.0
+
+# KAYNAGA GORE OPSIYONEL -- yalnizca kullandiginiz kaynagi kurun.
+#
+# USB webcam veya RTSP kamera icin (Raspberry Pi OS'ta apt onerilir:
+#   sudo apt install -y python3-opencv):
+# opencv-python-headless>=4.8.0
+#
+# CSI serit kablolu Pi Camera Module icin picamera2 GEREKIR ve pip ile
+# kurulmamalidir (libcamera sistem kutuphanelerine baglidir):
+#   sudo apt install -y python3-picamera2
+#
+# Sentetik test kaynagi ve picamera2 ile JPEG kodlama icin:
+# Pillow>=10.0.0

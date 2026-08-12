@@ -1,0 +1,25 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+.venv/
+.venv_win/
+__pycache__/
+*.pyc
+
+# Build outputs & caches
+dist/
+.next/
+.wrangler/
+.vite/
+uploads/
+
+# OS and IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log

@@ -1,0 +1,49 @@
+[Unit]
+Description=Akilli Ciftlik - Saha Kamera Ajani
+Documentation=file:///opt/surum-camera/README.md
+# Ag hazir olmadan baslatmanin anlami yok; yine de ajan kendi basina
+# yeniden dener, bu yalnizca ilk denemeyi bosa harcamamak icin.
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=surum
+Group=video
+WorkingDirectory=/opt/surum-camera
+
+# Sunucu adresi ve ajan anahtari burada tutulur (chmod 600).
+EnvironmentFile=/etc/surum-camera.env
+ExecStart=/usr/bin/python3 /opt/surum-camera/agent.py
+
+# Sahada guc kesintisi ve internet kopmasi olagandir: her kosulda geri gel.
+Restart=always
+RestartSec=5
+
+# Ajan zaten kendi icinde yeniden baglaniyor; systemd'nin "cok sik
+# yeniden basladi" freni devreye girip servisi tamamen durdurmasin.
+StartLimitIntervalSec=0
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=surum-camera
+
+# --- Guvenlik siniri ---
+# Ajanin tek isi kameradan okuyup aga yazmak; sistemin geri kalanina
+# erisimine gerek yok.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictRealtime=true
+# /dev/video* erisimi kamera icin sart.
+DeviceAllow=char-video4linux rw
+# CSI kamera libcamera uzerinden ek dugumler kullanir.
+DeviceAllow=/dev/dma_heap rw
+DeviceAllow=/dev/vchiq rw
+DeviceAllow=/dev/vcsm-cma rw
+
+[Install]
+WantedBy=multi-user.target
