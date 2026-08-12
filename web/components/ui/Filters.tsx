@@ -2,11 +2,6 @@
 
 import { Filter, Search, SlidersHorizontal } from "lucide-react";
 
-/**
- * Liste ekranlarinin arama + acilir filtre satiri.
- * Secenekler sunucudan gelen gercek degerlerle beslenir; secim yapildiginda
- * ilgili sorgu parametresi degisir ve liste yeniden cekilir.
- */
 export type FilterSelect = {
   /** Sorgu parametresi adi (orn: "status") */
   name: string;
@@ -22,12 +17,14 @@ export function Filters({
   search = "",
   onSearchChange,
   onSelectChange,
+  showExtraActionButtons = false,
 }: {
   placeholder?: string;
   selects?: FilterSelect[];
   search?: string;
   onSearchChange?: (value: string) => void;
   onSelectChange?: (name: string, value: string) => void;
+  showExtraActionButtons?: boolean;
 }) {
   return (
     <div className="filters">
@@ -54,12 +51,16 @@ export function Filters({
           ))}
         </select>
       ))}
-      <button className="icon-button" aria-label="Filtreler">
-        <Filter />
-      </button>
-      <button className="icon-button" aria-label="Görünüm ayarları">
-        <SlidersHorizontal />
-      </button>
+      {showExtraActionButtons && (
+        <>
+          <button className="icon-button" aria-label="Filtreler">
+            <Filter />
+          </button>
+          <button className="icon-button" aria-label="Görünüm ayarları">
+            <SlidersHorizontal />
+          </button>
+        </>
+      )}
     </div>
   );
 }

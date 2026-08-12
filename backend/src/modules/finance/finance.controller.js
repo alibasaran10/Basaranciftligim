@@ -69,7 +69,21 @@ export const listTransactions = catchAsync(async (req, res) => {
   if (req.query.type) filter.type = String(req.query.type);
   if (req.query.status) filter.status = String(req.query.status);
   if (req.query.category) filter.category = String(req.query.category).slice(0, 120);
-  if (req.query.days) filter.date = { $gte: new Date(Date.now() - Number(req.query.days) * 86400000) };
+  
+  if (req.query.startDate || req.query.endDate) {
+    filter.date = {};
+    if (req.query.startDate) filter.date.$gte = new Date(req.query.startDate);
+    if (req.query.endDate) filter.date.$lte = new Date(new Date(req.query.endDate).setHours(23, 59, 59, 999));
+  } else if (req.query.days) {
+    filter.date = { $gte: new Date(Date.now() - Number(req.query.days) * 86400000) };
+  }
+
+  if (req.query.minAmount || req.query.maxAmount) {
+    filter.amount = {};
+    if (req.query.minAmount) filter.amount.$gte = Number(req.query.minAmount);
+    if (req.query.maxAmount) filter.amount.$lte = Number(req.query.maxAmount);
+  }
+
   if (req.query.q) {
     const safe = String(req.query.q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&').slice(0, 80);
     filter.$or = [
@@ -79,8 +93,14 @@ export const listTransactions = catchAsync(async (req, res) => {
     ];
   }
 
+  let sort = { date: -1 };
+  if (req.query.sortBy === 'amount_asc') sort = { amount: 1 };
+  if (req.query.sortBy === 'amount_desc') sort = { amount: -1 };
+  if (req.query.sortBy === 'date_asc') sort = { date: 1 };
+  if (req.query.sortBy === 'date_desc') sort = { date: -1 };
+
   const [items, total] = await Promise.all([
-    FinanceTransaction.find(filter).sort({ date: -1 }).skip(skip).limit(limit).lean(),
+    FinanceTransaction.find(filter).sort(sort).skip(skip).limit(limit).lean(),
     FinanceTransaction.countDocuments(filter),
   ]);
 

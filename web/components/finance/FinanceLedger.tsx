@@ -5,6 +5,7 @@ import {
   CalendarDays,
   CheckCircle2,
   Clock3,
+  Filter,
   ShoppingCart,
   TrendingDown,
   TrendingUp,
@@ -38,14 +39,39 @@ const STATUS_OPTIONS = [
   { value: "beklemede", label: "Beklemede" },
 ];
 
+const DATE_RANGE_OPTIONS = [
+  { value: "7", label: "Son 7 Gün" },
+  { value: "30", label: "Son 30 Gün" },
+  { value: "90", label: "Son 90 Gün" },
+  { value: "365", label: "Bu Yıl (365 Gün)" },
+];
+
+const SORT_OPTIONS = [
+  { value: "date_desc", label: "Tarih: Yeniden Eskiye" },
+  { value: "date_asc", label: "Tarih: Eskiden Yeniye" },
+  { value: "amount_desc", label: "Tutar: Yüksekten Düşüğe" },
+  { value: "amount_asc", label: "Tutar: Düşükten Yükseğe" },
+];
+
 export function FinanceLedger({ type }: { type: "income" | "expense" }) {
   const dispatch = useAppDispatch();
   const income = type === "income";
   const apiType = income ? "gelir" : "gider";
 
   const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [filters, setFilters] = useState<Record<string, string>>({
+    days: "",
+    sortBy: "date_desc",
+    startDate: "",
+    endDate: "",
+    minAmount: "",
+    maxAmount: "",
+  });
   const [page, setPage] = useState(1);
+
+  // Filter Modals
+  const [showDateFilterModal, setShowDateFilterModal] = useState(false);
+  const [showAmountFilterModal, setShowAmountFilterModal] = useState(false);
 
   // Modals state
   const [showAddModal, setShowAddModal] = useState(false);
@@ -79,10 +105,28 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
       q: search || undefined,
       status: filters.status || undefined,
       category: filters.category || undefined,
+      days: filters.days || undefined,
+      startDate: filters.startDate || undefined,
+      endDate: filters.endDate || undefined,
+      minAmount: filters.minAmount || undefined,
+      maxAmount: filters.maxAmount || undefined,
+      sortBy: filters.sortBy || undefined,
       page,
       limit: 12,
     }),
-    [apiType, search, filters.status, filters.category, page],
+    [
+      apiType,
+      search,
+      filters.status,
+      filters.category,
+      filters.days,
+      filters.startDate,
+      filters.endDate,
+      filters.minAmount,
+      filters.maxAmount,
+      filters.sortBy,
+      page,
+    ],
   );
 
   const refetchAll = () => {
@@ -102,6 +146,14 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
     formatCurrency(tx.amount),
     tx.statusLabel || tx.status,
   ]);
+
+  const handleHeaderFilterClick = (headerName: string) => {
+    if (headerName === "Tarih") {
+      setShowDateFilterModal(true);
+    } else if (headerName === "Tutar") {
+      setShowAmountFilterModal(true);
+    }
+  };
 
   const handleOpenAddModal = () => {
     setEditForm({
@@ -196,6 +248,14 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
       dispatch(showToast("Kayıt silinemedi."));
     }
   };
+
+  const hasActiveCustomFilters =
+    Boolean(filters.days) ||
+    Boolean(filters.startDate) ||
+    Boolean(filters.endDate) ||
+    Boolean(filters.minAmount) ||
+    Boolean(filters.maxAmount) ||
+    filters.sortBy !== "date_desc";
 
   return (
     <div className="page-stack page-enter">
@@ -327,8 +387,74 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
               value: filters.status,
               options: STATUS_OPTIONS,
             },
+            {
+              name: "days",
+              placeholder: "Tüm Zamanlar",
+              value: filters.days,
+              options: DATE_RANGE_OPTIONS,
+            },
+            {
+              name: "sortBy",
+              placeholder: "Sıralama Seçin",
+              value: filters.sortBy,
+              options: SORT_OPTIONS,
+            },
           ]}
         />
+
+        {hasActiveCustomFilters && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              padding: "6px 12px",
+              background: "var(--surface-2)",
+              borderRadius: "8px",
+              fontSize: "0.82rem",
+              marginBottom: "8px",
+            }}
+          >
+            <span>Filtreler Aktif:</span>
+            {filters.days && <b>Son {filters.days} Gün</b>}
+            {filters.startDate && <b>Başlangıç: {filters.startDate}</b>}
+            {filters.endDate && <b>Bitiş: {filters.endDate}</b>}
+            {filters.minAmount && <b>Min: {filters.minAmount} TL</b>}
+            {filters.maxAmount && <b>Max: {filters.maxAmount} TL</b>}
+            {filters.sortBy !== "date_desc" && (
+              <b>
+                Sıralama: {SORT_OPTIONS.find((s) => s.value === filters.sortBy)?.label}
+              </b>
+            )}
+            <button
+              style={{
+                marginLeft: "auto",
+                background: "none",
+                border: "none",
+                color: "var(--red)",
+                cursor: "pointer",
+                fontWeight: 600,
+                fontSize: "0.8rem",
+              }}
+              onClick={() => {
+                setFilters({
+                  status: "",
+                  category: "",
+                  days: "",
+                  startDate: "",
+                  endDate: "",
+                  minAmount: "",
+                  maxAmount: "",
+                  sortBy: "date_desc",
+                });
+                setPage(1);
+              }}
+            >
+              Filtreleri Temizle
+            </button>
+          </div>
+        )}
+
         <DataTable
           loading={listLoading}
           headers={[
@@ -352,6 +478,7 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
               : undefined
           }
           onPageChange={setPage}
+          onHeaderFilterClick={handleHeaderFilterClick}
           onView={(index) => {
             const tx = transactions?.[index];
             if (tx) setSelectedViewTx(tx);
@@ -366,6 +493,254 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
           }}
         />
       </Panel>
+
+      {/* FILTER MODAL 1: Tarih Filtreleme Modalı */}
+      {showDateFilterModal && (
+        <div
+          className="modal-backdrop"
+          onClick={() => setShowDateFilterModal(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.55)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 999,
+          }}
+        >
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "var(--surface)",
+              padding: "26px",
+              borderRadius: "16px",
+              maxWidth: "420px",
+              width: "90%",
+              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.35)",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <Filter size={18} style={{ color: "var(--green-600)" }} />
+                <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 700 }}>Tarih Filtresi & Sıralaması</h3>
+              </div>
+              <button
+                className="icon-button"
+                onClick={() => setShowDateFilterModal(false)}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text)" }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <div>
+                <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                  Tarih Sıralaması
+                </label>
+                <select
+                  value={filters.sortBy}
+                  onChange={(e) => setFilters((c) => ({ ...c, sortBy: e.target.value }))}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                >
+                  <option value="date_desc">Yeniden Eskiye (En Yeni İlk)</option>
+                  <option value="date_asc">Eskiden Yeniye (En Eski İlk)</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                  Hızlı Zaman Aralığı
+                </label>
+                <select
+                  value={filters.days}
+                  onChange={(e) => setFilters((c) => ({ ...c, days: e.target.value, startDate: "", endDate: "" }))}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                >
+                  <option value="">Tüm Zamanlar</option>
+                  <option value="7">Son 7 Gün</option>
+                  <option value="30">Son 30 Gün</option>
+                  <option value="90">Son 90 Gün</option>
+                  <option value="365">Son 365 Gün</option>
+                </select>
+              </div>
+
+              <div style={{ borderTop: "1px solid var(--line)", paddingTop: "12px" }}>
+                <span style={{ fontSize: "0.82rem", fontWeight: 600, display: "block", marginBottom: "8px" }}>
+                  Veya Özel Tarih Aralığı Seçin
+                </span>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.78rem", color: "var(--muted)", marginBottom: "4px" }}>
+                      Başlangıç Tarihi
+                    </label>
+                    <input
+                      type="date"
+                      value={filters.startDate}
+                      onChange={(e) => setFilters((c) => ({ ...c, startDate: e.target.value, days: "" }))}
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.78rem", color: "var(--muted)", marginBottom: "4px" }}>
+                      Bitiş Tarihi
+                    </label>
+                    <input
+                      type="date"
+                      value={filters.endDate}
+                      onChange={(e) => setFilters((c) => ({ ...c, endDate: e.target.value, days: "" }))}
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "10px" }}>
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  onClick={() => {
+                    setFilters((c) => ({ ...c, days: "", startDate: "", endDate: "", sortBy: "date_desc" }));
+                    setShowDateFilterModal(false);
+                    setPage(1);
+                  }}
+                >
+                  Sıfırla
+                </button>
+                <button
+                  type="button"
+                  className="button button-primary"
+                  onClick={() => {
+                    setShowDateFilterModal(false);
+                    setPage(1);
+                  }}
+                >
+                  Filtreyi Uygula
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FILTER MODAL 2: Tutar Filtreleme Modalı */}
+      {showAmountFilterModal && (
+        <div
+          className="modal-backdrop"
+          onClick={() => setShowAmountFilterModal(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.55)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 999,
+          }}
+        >
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "var(--surface)",
+              padding: "26px",
+              borderRadius: "16px",
+              maxWidth: "420px",
+              width: "90%",
+              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.35)",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <Filter size={18} style={{ color: "var(--green-600)" }} />
+                <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 700 }}>Miktar / Tutar Filtresi</h3>
+              </div>
+              <button
+                className="icon-button"
+                onClick={() => setShowAmountFilterModal(false)}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text)" }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <div>
+                <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                  Tutar Sıralaması
+                </label>
+                <select
+                  value={filters.sortBy}
+                  onChange={(e) => setFilters((c) => ({ ...c, sortBy: e.target.value }))}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                >
+                  <option value="date_desc">Varsayılan (Tarihe Göre)</option>
+                  <option value="amount_desc">En Yüksek Tutar → En Düşük Tutar</option>
+                  <option value="amount_asc">En Düşük Tutar → En Yüksek Tutar</option>
+                </select>
+              </div>
+
+              <div style={{ borderTop: "1px solid var(--line)", paddingTop: "12px" }}>
+                <span style={{ fontSize: "0.82rem", fontWeight: 600, display: "block", marginBottom: "8px" }}>
+                  Tutar Aralığı (TL)
+                </span>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.78rem", color: "var(--muted)", marginBottom: "4px" }}>
+                      Min Tutar
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="0"
+                      value={filters.minAmount}
+                      onChange={(e) => setFilters((c) => ({ ...c, minAmount: e.target.value }))}
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.78rem", color: "var(--muted)", marginBottom: "4px" }}>
+                      Max Tutar
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="999999"
+                      value={filters.maxAmount}
+                      onChange={(e) => setFilters((c) => ({ ...c, maxAmount: e.target.value }))}
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "10px" }}>
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  onClick={() => {
+                    setFilters((c) => ({ ...c, minAmount: "", maxAmount: "", sortBy: "date_desc" }));
+                    setShowAmountFilterModal(false);
+                    setPage(1);
+                  }}
+                >
+                  Sıfırla
+                </button>
+                <button
+                  type="button"
+                  className="button button-primary"
+                  onClick={() => {
+                    setShowAmountFilterModal(false);
+                    setPage(1);
+                  }}
+                >
+                  Filtreyi Uygula
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* MODAL 1: Görüntüleme Modalı (View Modal) */}
       {selectedViewTx && (

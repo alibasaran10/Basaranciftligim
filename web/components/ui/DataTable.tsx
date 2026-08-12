@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Eye, Pencil, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, Filter, Pencil, Trash2 } from "lucide-react";
 
 import { formatNumber } from "@/lib/format";
 import { useAppDispatch } from "@/store/hooks";
@@ -42,6 +42,7 @@ export function DataTable({
   onView,
   onEdit,
   onDelete,
+  onHeaderFilterClick,
   emptyMessage = "Kayıt bulunamadı.",
 }: {
   headers: string[];
@@ -53,6 +54,7 @@ export function DataTable({
   onView?: (index: number) => void;
   onEdit?: (index: number) => void;
   onDelete?: (index: number) => void;
+  onHeaderFilterClick?: (headerName: string) => void;
   emptyMessage?: string;
 }) {
   const dispatch = useAppDispatch();
@@ -78,9 +80,31 @@ export function DataTable({
       <table className="data-table">
         <thead>
           <tr>
-            {headers.map((header) => (
-              <th key={header}>{header}</th>
-            ))}
+            {headers.map((header) => {
+              const isFilterableHeader = ["Tarih", "Tutar"].includes(header);
+              return (
+                <th key={header}>
+                  {isFilterableHeader && onHeaderFilterClick ? (
+                    <div
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "5px",
+                        cursor: "pointer",
+                        userSelect: "none",
+                      }}
+                      onClick={() => onHeaderFilterClick(header)}
+                      title={`${header} filtresini ve sıralamasını aç`}
+                    >
+                      <span>{header}</span>
+                      <Filter size={12} style={{ color: "var(--green-600)", strokeWidth: 2.3 }} />
+                    </div>
+                  ) : (
+                    header
+                  )}
+                </th>
+              );
+            })}
             <th>İşlemler</th>
           </tr>
         </thead>
