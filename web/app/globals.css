@@ -3120,6 +3120,30 @@ img {
   border: 1px solid var(--line);
   border-radius: 7px;
   background: var(--surface);
+  color: inherit;
+}
+
+.phone-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.phone-prefix {
+  min-height: 40px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-weight: 700;
+  color: var(--text-soft, inherit);
+  user-select: none;
+  font-size: 0.85rem;
+  white-space: nowrap;
 }
 
 .settings-form .button {

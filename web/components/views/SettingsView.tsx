@@ -35,9 +35,117 @@ const PREFERENCE_CARDS = [
 const BUSINESS_TYPES = [
   "Büyükbaş Hayvancılık",
   "Küçükbaş Hayvancılık",
-  "Entegre Tarım",
+  "Kanatlı Hayvancılık",
   "Bitkisel Üretim",
+  "Entegre İşletme",
+  "Diğer",
 ];
+
+function BusinessForm({
+  business,
+  onSubmit,
+  saving,
+}: {
+  business: FarmSettings["business"];
+  onSubmit: (payload: { name: string; businessType: string; phone: string; email: string }) => void;
+  saving: boolean;
+}) {
+  const initialDigits = (business.phone || "").replace(/[^0-9]/g, "").slice(-10);
+  const [name, setName] = useState(business.name || "");
+  const [phone, setPhone] = useState(initialDigits);
+  const [phoneError, setPhoneError] = useState("");
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Sadece harf ve boşluk (rakam engellenir), max 50 karakter
+    const value = e.target.value.replace(/[0-9]/g, "").slice(0, 50);
+    setName(value);
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Sadece rakam (harf engellenir), tam 10 hane
+    const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
+    setPhone(value);
+    if (value.length > 0 && value.length < 10) {
+      setPhoneError("Telefon numarası 10 haneli olmalıdır.");
+    } else {
+      setPhoneError("");
+    }
+  };
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (phone.length > 0 && phone.length !== 10) {
+      setPhoneError("Telefon numarası 10 haneli olmalıdır.");
+      return;
+    }
+    const formData = new FormData(e.currentTarget);
+    const formattedPhone = phone ? `+90 ${phone}` : "";
+    onSubmit({
+      name,
+      businessType: String(formData.get("businessType") || ""),
+      phone: formattedPhone,
+      email: String(formData.get("email") || ""),
+    });
+  };
+
+  return (
+    <form className="settings-form" onSubmit={handleSubmit}>
+      <label>
+        İşletme Adı
+        <input
+          required
+          name="name"
+          value={name}
+          onChange={handleNameChange}
+          maxLength={50}
+          placeholder="İşletme Adı"
+        />
+      </label>
+      <label>
+        İşletme Türü
+        <select name="businessType" defaultValue={business.businessType || BUSINESS_TYPES[0]}>
+          {Array.from(new Set([business.businessType, ...BUSINESS_TYPES]))
+            .filter(Boolean)
+            .map((option) => (
+              <option key={option}>{option}</option>
+            ))}
+        </select>
+      </label>
+      <label>
+        Telefon
+        <div className="phone-input-wrapper">
+          <span className="phone-prefix">+90</span>
+          <input
+            name="phone"
+            type="tel"
+            inputMode="numeric"
+            value={phone}
+            onChange={handlePhoneChange}
+            maxLength={10}
+            placeholder="5XX XXX XX XX"
+          />
+        </div>
+        {phoneError && (
+          <small style={{ color: "#ef4444", marginTop: "4px", display: "block" }}>
+            {phoneError}
+          </small>
+        )}
+      </label>
+      <label>
+        E-posta (İsteğe bağlı)
+        <input
+          name="email"
+          type="email"
+          defaultValue={business.email}
+          placeholder="ornek@isletme.com"
+        />
+      </label>
+      <button className="button button-primary" type="submit" disabled={saving}>
+        <Save /> {saving ? "Kaydediliyor…" : "Değişiklikleri Kaydet"}
+      </button>
+    </form>
+  );
+}
 
 export function SettingsView() {
   const dispatch = useAppDispatch();
@@ -45,8 +153,7 @@ export function SettingsView() {
 
   /**
    * Tercihler sunucudan gelir; kullanicinin yaptigi degisiklikler yalnizca
-   * "overrides" olarak tutulup uzerine bindirilir. Boylece efekt icinde
-   * kopyalama yapmaya gerek kalmaz ve yeniden cekilen veri kaybolmaz.
+   * "overrides" olarak tutulup uzerine bindirilir.
    */
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState(false);
@@ -59,23 +166,20 @@ export function SettingsView() {
     try {
       await api.patch("/farm/preferences", { [key]: next });
     } catch {
-      // Sunucu reddederse eski duruma don.
       setOverrides((current) => ({ ...current, [key]: !next }));
       dispatch(showToast("Tercih kaydedilemedi."));
     }
   };
 
-  const saveBusiness = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const values = new FormData(event.currentTarget);
+  const handleSaveBusiness = async (payload: {
+    name: string;
+    businessType: string;
+    phone: string;
+    email: string;
+  }) => {
     setSaving(true);
     try {
-      await api.patch("/farm/settings", {
-        name: String(values.get("name") || ""),
-        businessType: String(values.get("businessType") || ""),
-        phone: String(values.get("phone") || ""),
-        email: String(values.get("email") || ""),
-      });
+      await api.patch("/farm/settings", payload);
       dispatch(showToast("İşletme bilgileri kaydedildi."));
       refetch();
     } catch {
@@ -126,33 +230,12 @@ export function SettingsView() {
       <div className="settings-columns">
         <Panel title="İşletme Bilgileri">
           {data ? (
-            <form className="settings-form" onSubmit={saveBusiness} key={data.business.id}>
-              <label>
-                İşletme Adı
-                <input name="name" defaultValue={data.business.name} required />
-              </label>
-              <label>
-                İşletme Türü
-                <select name="businessType" defaultValue={data.business.businessType || BUSINESS_TYPES[0]}>
-                  {Array.from(new Set([data.business.businessType, ...BUSINESS_TYPES]))
-                    .filter(Boolean)
-                    .map((option) => (
-                      <option key={option}>{option}</option>
-                    ))}
-                </select>
-              </label>
-              <label>
-                Telefon
-                <input name="phone" defaultValue={data.business.phone} />
-              </label>
-              <label>
-                E-posta
-                <input name="email" type="email" defaultValue={data.business.email} />
-              </label>
-              <button className="button button-primary" type="submit" disabled={saving}>
-                <Save /> {saving ? "Kaydediliyor…" : "Değişiklikleri Kaydet"}
-              </button>
-            </form>
+            <BusinessForm
+              key={data.business.id}
+              business={data.business}
+              onSubmit={handleSaveBusiness}
+              saving={saving}
+            />
           ) : (
             <SkeletonBlock rows={5} height={34} />
           )}
