@@ -70,7 +70,7 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
   const [page, setPage] = useState(1);
 
   // Filter Modals
-  const [showDateFilterModal, setShowDateFilterModal] = useState(false);
+  const [showFilterModal, setShowFilterModal] = useState(false);
   const [showAmountFilterModal, setShowAmountFilterModal] = useState(false);
 
   // Modals state
@@ -149,7 +149,7 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
 
   const handleHeaderFilterClick = (headerName: string) => {
     if (headerName === "Tarih") {
-      setShowDateFilterModal(true);
+      setShowFilterModal(true);
     } else if (headerName === "Tutar") {
       setShowAmountFilterModal(true);
     }
@@ -267,6 +267,7 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
         } yönetin.`}
         primaryLabel={income ? "Yeni Gelir Ekle" : "Yeni Gider Ekle"}
         onPrimaryClick={handleOpenAddModal}
+        onFilterClick={() => setShowFilterModal(true)}
       />
 
       {error && <ErrorState message={error} onRetry={refetchAll} />}
@@ -494,11 +495,11 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
         />
       </Panel>
 
-      {/* FILTER MODAL 1: Tarih Filtreleme Modalı */}
-      {showDateFilterModal && (
+      {/* FILTER MODAL 1: Üst Başlık Filtrele Modalı (Miktar + Tarih + Sıralama) */}
+      {showFilterModal && (
         <div
           className="modal-backdrop"
-          onClick={() => setShowDateFilterModal(false)}
+          onClick={() => setShowFilterModal(false)}
           style={{
             position: "fixed",
             inset: 0,
@@ -516,7 +517,7 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
               background: "var(--surface)",
               padding: "26px",
               borderRadius: "16px",
-              maxWidth: "420px",
+              maxWidth: "460px",
               width: "90%",
               boxShadow: "0 25px 50px -12px rgba(0,0,0,0.35)",
             }}
@@ -524,11 +525,11 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <Filter size={18} style={{ color: "var(--green-600)" }} />
-                <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 700 }}>Tarih Filtresi & Sıralaması</h3>
+                <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 700 }}>Gelişmiş İşlem Filtresi</h3>
               </div>
               <button
                 className="icon-button"
-                onClick={() => setShowDateFilterModal(false)}
+                onClick={() => setShowFilterModal(false)}
                 style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text)" }}
               >
                 <X size={20} />
@@ -538,19 +539,53 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               <div>
                 <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
-                  Tarih Sıralaması
+                  Sıralama Seçeneği
                 </label>
                 <select
                   value={filters.sortBy}
                   onChange={(e) => setFilters((c) => ({ ...c, sortBy: e.target.value }))}
                   style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
                 >
-                  <option value="date_desc">Yeniden Eskiye (En Yeni İlk)</option>
-                  <option value="date_asc">Eskiden Yeniye (En Eski İlk)</option>
+                  <option value="date_desc">Tarih: Yeniden Eskiye (En Yeni İlk)</option>
+                  <option value="date_asc">Tarih: Eskiden Yeniye (En Eski İlk)</option>
+                  <option value="amount_desc">Tutar: En Yüksek → En Düşük</option>
+                  <option value="amount_asc">Tutar: En Düşük → En Yüksek</option>
                 </select>
               </div>
 
-              <div>
+              <div style={{ borderTop: "1px solid var(--line)", paddingTop: "12px" }}>
+                <span style={{ fontSize: "0.85rem", fontWeight: 600, display: "block", marginBottom: "8px" }}>
+                  Miktar / Tutar Aralığı (TL)
+                </span>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.78rem", color: "var(--muted)", marginBottom: "4px" }}>
+                      Min Tutar
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="Örn: 1000"
+                      value={filters.minAmount}
+                      onChange={(e) => setFilters((c) => ({ ...c, minAmount: e.target.value }))}
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.78rem", color: "var(--muted)", marginBottom: "4px" }}>
+                      Max Tutar
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="Örn: 50000"
+                      value={filters.maxAmount}
+                      onChange={(e) => setFilters((c) => ({ ...c, maxAmount: e.target.value }))}
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ borderTop: "1px solid var(--line)", paddingTop: "12px" }}>
                 <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
                   Hızlı Zaman Aralığı
                 </label>
@@ -567,7 +602,7 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
                 </select>
               </div>
 
-              <div style={{ borderTop: "1px solid var(--line)", paddingTop: "12px" }}>
+              <div>
                 <span style={{ fontSize: "0.82rem", fontWeight: 600, display: "block", marginBottom: "8px" }}>
                   Veya Özel Tarih Aralığı Seçin
                 </span>
@@ -602,18 +637,26 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
                   type="button"
                   className="button button-secondary"
                   onClick={() => {
-                    setFilters((c) => ({ ...c, days: "", startDate: "", endDate: "", sortBy: "date_desc" }));
-                    setShowDateFilterModal(false);
+                    setFilters((c) => ({
+                      ...c,
+                      days: "",
+                      startDate: "",
+                      endDate: "",
+                      minAmount: "",
+                      maxAmount: "",
+                      sortBy: "date_desc",
+                    }));
+                    setShowFilterModal(false);
                     setPage(1);
                   }}
                 >
-                  Sıfırla
+                  Filtreleri Sıfırla
                 </button>
                 <button
                   type="button"
                   className="button button-primary"
                   onClick={() => {
-                    setShowDateFilterModal(false);
+                    setShowFilterModal(false);
                     setPage(1);
                   }}
                 >

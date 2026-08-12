@@ -13,6 +13,8 @@ export function PageHeader({
   icon,
   primaryLabel = "Yeni İşlem",
   compact = false,
+  onPrimaryClick,
+  onFilterClick,
 }: {
   eyebrow?: string;
   title: string;
@@ -20,6 +22,8 @@ export function PageHeader({
   icon?: React.ReactNode;
   primaryLabel?: string;
   compact?: boolean;
+  onPrimaryClick?: () => void;
+  onFilterClick?: () => void;
 }) {
   const dispatch = useAppDispatch();
 
@@ -38,7 +42,10 @@ export function PageHeader({
         </button>
         <button
           className="button button-secondary page-filter-button"
-          onClick={() => dispatch(showToast("Filtreler güncellendi."))}
+          onClick={() => {
+            if (onFilterClick) onFilterClick();
+            else dispatch(showToast("Filtreler güncellendi."));
+          }}
         >
           <Filter /> Filtrele
         </button>
@@ -50,7 +57,13 @@ export function PageHeader({
             <FileDown /> Rapor Al
           </button>
         )}
-        <button className="button button-primary" onClick={() => dispatch(openModal("add"))}>
+        <button
+          className="button button-primary"
+          onClick={() => {
+            if (onPrimaryClick) onPrimaryClick();
+            else dispatch(openModal("add"));
+          }}
+        >
           <Plus /> {primaryLabel}
         </button>
       </div>
