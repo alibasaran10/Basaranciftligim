@@ -22,14 +22,20 @@ async function main() {
     process.exit(1);
   }
 
-  const today = new Date();
+  // Onceki Cirpici Mandacilik / Test verilerini temizle
+  await FinanceTransaction.deleteMany({ farm: farm._id, code: { $in: ['GEL-2026-9999', 'GEL-2026-9998', 'GEL-2026-9997', 'GID-2026-9999', 'GID-2026-9998', 'GEL-2026-0888', 'GEL-2026-0889', 'GEL-2026-0890', 'GID-2026-0888', 'GID-2026-0889', 'GID-2026-0890'] } });
+
+  // En yeni tarih (Tablonun en basinda görünmesi icin)
+  const topDate = new Date('2026-09-01T12:00:00Z');
+  const topDate2 = new Date('2026-08-31T10:00:00Z');
+  const topDate3 = new Date('2026-08-30T09:00:00Z');
 
   const customTransactions = [
     {
       farm: farm._id,
       type: 'gelir',
-      code: 'GEL-2026-0888',
-      date: today,
+      code: 'GEL-2026-9999',
+      date: topDate,
       description: 'Çırpıcı Mandacılık Teşvik ve Destek Ödemesi',
       category: 'Devlet Teşviki / Hibe',
       counterparty: 'Çırpıcı Mandacılık',
@@ -41,8 +47,8 @@ async function main() {
     {
       farm: farm._id,
       type: 'gelir',
-      code: 'GEL-2026-0889',
-      date: today,
+      code: 'GEL-2026-9998',
+      date: topDate2,
       description: 'Günlük Süt Satış Bedeli',
       category: 'Süt Satışları',
       counterparty: 'Balıkesir Mandıra A.Ş.',
@@ -54,8 +60,8 @@ async function main() {
     {
       farm: farm._id,
       type: 'gelir',
-      code: 'GEL-2026-0890',
-      date: new Date(Date.now() - 86400000 * 2),
+      code: 'GEL-2026-9997',
+      date: topDate3,
       description: '15 Adet Damızlık Gebe Düve Satışı',
       category: 'Hayvan Satışı',
       counterparty: 'Karesi Hayvancılık',
@@ -67,8 +73,8 @@ async function main() {
     {
       farm: farm._id,
       type: 'gider',
-      code: 'GID-2026-0888',
-      date: today,
+      code: 'GID-2026-9999',
+      date: topDate,
       description: 'Traktör ve Biçerdöver Mazot Alımı (5000 Lt)',
       category: 'Yakıt / Mazot',
       counterparty: 'Petrol Ofisi - Balıkesir',
@@ -80,8 +86,8 @@ async function main() {
     {
       farm: farm._id,
       type: 'gider',
-      code: 'GID-2026-0889',
-      date: today,
+      code: 'GID-2026-9998',
+      date: topDate2,
       description: '100 Torba Süt Yemi ve Kesif Yem Alımı',
       category: 'Yem',
       counterparty: 'Karaova Yem Sanayi',
@@ -90,23 +96,10 @@ async function main() {
       paidAmount: 340000,
       status: 'tamamlandi',
     },
-    {
-      farm: farm._id,
-      type: 'gider',
-      code: 'GID-2026-0890',
-      date: new Date(Date.now() - 86400000 * 3),
-      description: 'Sonbahar Periyodik Aşılama ve Sağlık Taraması',
-      category: 'İlaç / Aşılama',
-      counterparty: 'VetMed Kliniği',
-      paymentMethod: 'nakit',
-      amount: 45000,
-      paidAmount: 45000,
-      status: 'tamamlandi',
-    },
   ];
 
   await FinanceTransaction.insertMany(customTransactions);
-  console.log('Özel işlemler başarıyla veritabanına eklendi!');
+  console.log('Çırpıcı Mandacılık ve özel işlemler tablonun en tepesine yerleştirildi!');
   await mongoose.disconnect();
 }
 
