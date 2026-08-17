@@ -213,12 +213,33 @@ export function UsersView() {
   const [userToDeleteConfirm, setUserToDeleteConfirm] = useState<AppUserItem | null>(null);
 
   const addModalRef = useRef<HTMLDivElement>(null);
+  const viewModalRef = useRef<HTMLDivElement>(null);
+  const editModalRef = useRef<HTMLDivElement>(null);
+  const deleteModalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (showAddModal && addModalRef.current) {
       addModalRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }, [showAddModal]);
+
+  useEffect(() => {
+    if (userToView && viewModalRef.current) {
+      viewModalRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [userToView]);
+
+  useEffect(() => {
+    if (userToEdit && editModalRef.current) {
+      editModalRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [userToEdit]);
+
+  useEffect(() => {
+    if (userToDeleteConfirm && deleteModalRef.current) {
+      deleteModalRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [userToDeleteConfirm]);
 
   // Form State (Yeni Ekle)
   const [addFormData, setAddFormData] = useState({
@@ -565,6 +586,7 @@ export function UsersView() {
           }}
         >
           <div
+            ref={viewModalRef}
             style={{
               width: "100%",
               maxWidth: "480px",
@@ -688,6 +710,7 @@ export function UsersView() {
           }}
         >
           <div
+            ref={editModalRef}
             style={{
               width: "100%",
               maxWidth: "500px",
@@ -902,6 +925,7 @@ export function UsersView() {
           }}
         >
           <div
+            ref={deleteModalRef}
             style={{
               width: "100%",
               maxWidth: "420px",
