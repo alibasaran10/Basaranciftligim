@@ -57,7 +57,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.45;
   font-weight: 450;
   -webkit-font-smoothing: antialiased;
@@ -978,12 +978,12 @@ img {
 .page-header p {
   margin: 5px 0 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .breadcrumb {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .page-actions {
@@ -1071,21 +1071,22 @@ img {
 .stat-copy > small {
   overflow: hidden;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 12px;
+  font-weight: 550;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .stat-copy > strong {
   margin-top: 3px;
-  font-size: 18px;
+  font-size: 20px;
   line-height: 1.1;
   white-space: nowrap;
 }
 
 .stat-copy strong em {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
   font-style: normal;
   font-weight: 500;
 }
@@ -1093,10 +1094,11 @@ img {
 .stat-meta {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   margin-top: 6px;
   color: var(--muted);
-  font-size: 8px;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .stat-meta.is-up {
@@ -1108,7 +1110,8 @@ img {
 }
 
 .stat-meta svg {
-  width: 11px;
+  width: 13px;
+  height: 13px;
 }
 
 .panel {
@@ -1132,13 +1135,13 @@ img {
 
 .panel-heading h2 {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   font-weight: 700;
 }
 
 .panel-heading a {
   color: var(--green-600);
-  font-size: 9px;
+  font-size: 11.5px;
   font-weight: 650;
 }
 
@@ -1212,11 +1215,11 @@ img {
 
 .donut-chart > span small {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11.5px;
 }
 
 .donut-chart > span strong {
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .chart-legend {
@@ -1226,20 +1229,20 @@ img {
 
 .chart-legend span {
   display: grid;
-  grid-template-columns: 8px 1fr auto;
+  grid-template-columns: 10px 1fr auto;
   align-items: center;
-  column-gap: 6px;
+  column-gap: 8px;
 }
 
 .chart-legend i {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 2px;
 }
 
 .chart-legend b,
 .chart-legend small {
-  font-size: 8px;
+  font-size: 11.5px;
 }
 
 .chart-legend small {
@@ -1273,12 +1276,12 @@ img {
 }
 
 .ring-progress strong {
-  font-size: 22px;
+  font-size: 24px;
 }
 
 .ring-progress small {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11.5px;
 }
 
 .dashboard-main-grid {
@@ -1579,7 +1582,7 @@ img {
   border: 0;
   outline: 0;
   background: transparent;
-  font-size: 9px;
+  font-size: 13px;
 }
 
 .filters select {
@@ -1588,7 +1591,7 @@ img {
   border: 1px solid var(--line);
   border-radius: 7px;
   background: var(--surface);
-  font-size: 9px;
+  font-size: 13px;
 }
 
 .filters .icon-button {
@@ -2977,7 +2980,7 @@ img {
 
 .finance-ring-meta small,
 .finance-ring-meta b {
-  font-size: 8px;
+  font-size: 12px;
 }
 
 .compact-quick-actions {

@@ -11,7 +11,7 @@ import {
   TrendingUp,
   X,
 } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 
 import { ErrorState, SkeletonBlock } from "@/components/ui/AsyncState";
 import { BarsChart, DonutChart, RingProgress } from "@/components/ui/Charts";
@@ -75,6 +75,14 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
 
   // Modals state
   const [showAddModal, setShowAddModal] = useState(false);
+  const addModalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (showAddModal && addModalRef.current) {
+      addModalRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [showAddModal]);
+
   const [selectedViewTx, setSelectedViewTx] = useState<FinanceTransactionRow | null>(null);
   const [selectedEditTx, setSelectedEditTx] = useState<FinanceTransactionRow | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -904,6 +912,7 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
         >
           <div
             className="modal-content"
+            ref={addModalRef}
             onClick={(e) => e.stopPropagation()}
             style={{
               background: "var(--surface)",
