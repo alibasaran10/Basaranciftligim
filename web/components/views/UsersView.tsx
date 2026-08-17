@@ -6,8 +6,10 @@ import {
   Camera,
   CheckCircle2,
   Coins,
+  Eye,
   KeyRound,
   Lock,
+  Pencil,
   Plus,
   ShieldCheck,
   Sprout,
@@ -203,7 +205,13 @@ export function UsersView() {
   const [search, setSearch] = useState("");
   const [selectedTitle, setSelectedTitle] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
+
+  // Modal States
   const [showAddModal, setShowAddModal] = useState(false);
+  const [userToView, setUserToView] = useState<AppUserItem | null>(null);
+  const [userToEdit, setUserToEdit] = useState<AppUserItem | null>(null);
+  const [userToDeleteConfirm, setUserToDeleteConfirm] = useState<AppUserItem | null>(null);
+
   const addModalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -212,8 +220,8 @@ export function UsersView() {
     }
   }, [showAddModal]);
 
-  // Form State
-  const [formData, setFormData] = useState({
+  // Form State (Yeni Ekle)
+  const [addFormData, setAddFormData] = useState({
     fullName: "",
     email: "",
     phone: "",
@@ -221,18 +229,26 @@ export function UsersView() {
     title: "İşletme Yöneticisi" as UserTitle,
     status: "aktif" as "aktif" | "bekliyor" | "pasif",
   });
-  const [formErrors, setFormErrors] = useState<{ fullName?: string; phone?: string; email?: string }>({});
+  const [addFormErrors, setAddFormErrors] = useState<{ fullName?: string; phone?: string; email?: string }>({});
 
-  const handleNameChange = (val: string) => {
+  // Form State (Düzenle)
+  const [editFormData, setEditFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    gender: "erkek" as "erkek" | "kadin",
+    title: "İşletme Yöneticisi" as UserTitle,
+    status: "aktif" as "aktif" | "bekliyor" | "pasif",
+  });
+
+  const handleNameInput = (val: string, setter: (fn: (prev: any) => any) => void) => {
     const cleanVal = val.replace(/[^a-zA-ZçğışöüÇĞİŞÖÜ\s]/g, "");
-    setFormData((prev) => ({ ...prev, fullName: cleanVal }));
-    if (formErrors.fullName) setFormErrors((prev) => ({ ...prev, fullName: undefined }));
+    setter((prev: any) => ({ ...prev, fullName: cleanVal }));
   };
 
-  const handlePhoneChange = (val: string) => {
+  const handlePhoneInput = (val: string, setter: (fn: (prev: any) => any) => void) => {
     const cleanVal = val.replace(/[^0-9]/g, "").slice(0, 10);
-    setFormData((prev) => ({ ...prev, phone: cleanVal }));
-    if (formErrors.phone) setFormErrors((prev) => ({ ...prev, phone: undefined }));
+    setter((prev: any) => ({ ...prev, phone: cleanVal }));
   };
 
   const filteredUsers = useMemo(() => {
@@ -257,48 +273,49 @@ export function UsersView() {
     };
   }, [users]);
 
+  // Yeni Kullanıcı Ekle Submit
   const handleAddUserSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const errors: { fullName?: string; phone?: string; email?: string } = {};
 
-    if (!formData.fullName.trim() || formData.fullName.trim().length < 2) {
+    if (!addFormData.fullName.trim() || addFormData.fullName.trim().length < 2) {
       errors.fullName = "Lütfen geçerli bir İsim Soyisim girin (rakam içeremez).";
     }
 
-    if (!formData.phone.trim() || formData.phone.length < 10) {
+    if (!addFormData.phone.trim() || addFormData.phone.length < 10) {
       errors.phone = "Lütfen 10 haneli geçerli bir telefon numarası girin.";
     }
 
-    if (!formData.email.trim() || !formData.email.includes("@")) {
+    if (!addFormData.email.trim() || !addFormData.email.includes("@")) {
       errors.email = "Lütfen geçerli bir e-posta adresi girin.";
     }
 
     if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
+      setAddFormErrors(errors);
       dispatch(showToast("Lütfen form alanlarını eksiksiz ve doğru biçimde doldurun."));
       return;
     }
 
-    const config = TITLE_CONFIG[formData.title];
-    const avatar = formData.gender === "kadin" ? "/assets/profile_farmer_female.png" : "/assets/profile_farmer.png";
+    const config = TITLE_CONFIG[addFormData.title];
+    const avatar = addFormData.gender === "kadin" ? "/assets/profile_farmer_female.png" : "/assets/profile_farmer.png";
 
     const newUser: AppUserItem = {
       id: `usr-${Date.now()}`,
-      name: formData.fullName.trim(),
-      email: formData.email.trim(),
-      phone: `+90 ${formData.phone}`,
-      gender: formData.gender,
+      name: addFormData.fullName.trim(),
+      email: addFormData.email.trim(),
+      phone: addFormData.phone.startsWith("+90") ? addFormData.phone : `+90 ${addFormData.phone}`,
+      gender: addFormData.gender,
       avatarUrl: avatar,
-      title: formData.title,
+      title: addFormData.title,
       accessScope: config.accessScope,
       allowedModules: config.allowedModules,
-      status: formData.status,
+      status: addFormData.status,
       createdAt: new Date().toISOString().split("T")[0],
     };
 
     setUsers((prev) => [newUser, ...prev]);
     setShowAddModal(false);
-    setFormData({
+    setAddFormData({
       fullName: "",
       email: "",
       phone: "",
@@ -306,15 +323,62 @@ export function UsersView() {
       title: "İşletme Yöneticisi",
       status: "aktif",
     });
-    setFormErrors({});
+    setAddFormErrors({});
     dispatch(showToast(`Yeni kullanıcı ${newUser.name} (${newUser.title}) başarıyla eklendi.`));
   };
 
-  const handleDeleteUser = (index: number) => {
-    const userToDelete = filteredUsers[index];
-    if (!userToDelete) return;
-    setUsers((prev) => prev.filter((u) => u.id !== userToDelete.id));
-    dispatch(showToast(`${userToDelete.name} kullanıcı hesabı kaldırıldı.`));
+  // Düzenleme Başlat
+  const startEditUser = (user: AppUserItem) => {
+    setUserToEdit(user);
+    const phoneDigits = user.phone.replace(/[^0-9]/g, "").slice(-10);
+    setEditFormData({
+      fullName: user.name,
+      email: user.email,
+      phone: phoneDigits,
+      gender: user.gender,
+      title: user.title,
+      status: user.status,
+    });
+  };
+
+  // Düzenleme Submit
+  const handleEditUserSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!userToEdit) return;
+
+    if (!editFormData.fullName.trim() || editFormData.phone.length < 10) {
+      dispatch(showToast("Lütfen İsim Soyisim ve Telefon alanlarını eksiksiz doldurun."));
+      return;
+    }
+
+    const config = TITLE_CONFIG[editFormData.title];
+    const avatar = editFormData.gender === "kadin" ? "/assets/profile_farmer_female.png" : "/assets/profile_farmer.png";
+
+    const updatedUser: AppUserItem = {
+      ...userToEdit,
+      name: editFormData.fullName.trim(),
+      email: editFormData.email.trim(),
+      phone: editFormData.phone.startsWith("+90") ? editFormData.phone : `+90 ${editFormData.phone}`,
+      gender: editFormData.gender,
+      avatarUrl: avatar,
+      title: editFormData.title,
+      accessScope: config.accessScope,
+      allowedModules: config.allowedModules,
+      status: editFormData.status,
+    };
+
+    setUsers((prev) => prev.map((u) => (u.id === userToEdit.id ? updatedUser : u)));
+    setUserToEdit(null);
+    dispatch(showToast(`${updatedUser.name} kullanıcısının bilgileri güncellendi.`));
+  };
+
+  // Silme İşlemini Onayla
+  const confirmDeleteUser = () => {
+    if (!userToDeleteConfirm) return;
+    const deletedName = userToDeleteConfirm.name;
+    setUsers((prev) => prev.filter((u) => u.id !== userToDeleteConfirm.id));
+    setUserToDeleteConfirm(null);
+    dispatch(showToast(`${deletedName} kullanıcısı sistemden silindi.`));
   };
 
   const rows = filteredUsers.map((u) => {
@@ -422,7 +486,9 @@ export function UsersView() {
         <DataTable
           headers={["Ad Soyad & Tel", "E-posta", "Ünvan", "Erişim Alanı", "Durum"]}
           rows={rows}
-          onDelete={(index) => handleDeleteUser(index)}
+          onView={(index) => setUserToView(filteredUsers[index])}
+          onEdit={(index) => startEditUser(filteredUsers[index])}
+          onDelete={(index) => setUserToDeleteConfirm(filteredUsers[index])}
         />
       </Panel>
 
@@ -452,7 +518,7 @@ export function UsersView() {
                   gap: "8px",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", justifyBetween: "space-between", gap: "8px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
                   <IconComp size={20} style={{ color: "var(--green-600)" }} />
                   <strong style={{ fontSize: "14px", flex: 1 }}>{titleKey}</strong>
                   <Badge tone={cfg.tone}>{titleKey}</Badge>
@@ -483,7 +549,421 @@ export function UsersView() {
         </div>
       </Panel>
 
-      {/* MODAL: Yeni Kullanıcı Ekle */}
+      {/* MODAL 1: Görüntüleme Modalı */}
+      {userToView && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 100,
+            background: "rgba(0, 0, 0, 0.65)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "16px",
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "480px",
+              background: "var(--surface)",
+              border: "1px solid var(--line)",
+              borderRadius: "14px",
+              padding: "20px",
+              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.3)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "16px",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Eye style={{ color: "var(--green-600)" }} />
+                <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 700 }}>Kullanıcı Detayları</h3>
+              </div>
+              <button
+                onClick={() => setUserToView(null)}
+                style={{ background: "none", border: 0, color: "var(--muted)", cursor: "pointer" }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "12px", background: "var(--surface-2)", borderRadius: "10px" }}>
+              <div className="topbar-avatar-wrap" style={{ width: "54px", height: "54px" }}>
+                <Image
+                  src={
+                    userToView.avatarUrl ||
+                    (userToView.gender === "kadin"
+                      ? "/assets/profile_farmer_female.png"
+                      : "/assets/profile_farmer.png")
+                  }
+                  alt=""
+                  width={54}
+                  height={54}
+                  unoptimized
+                />
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                <strong style={{ fontSize: "16px" }}>{userToView.name}</strong>
+                <Badge tone={TITLE_CONFIG[userToView.title].tone}>{userToView.title}</Badge>
+              </div>
+            </div>
+
+            <div className="info-grid">
+              <span>
+                <small>E-Posta</small>
+                <b>{userToView.email}</b>
+              </span>
+              <span>
+                <small>Telefon</small>
+                <b>{userToView.phone}</b>
+              </span>
+              <span>
+                <small>Cinsiyet</small>
+                <b>{userToView.gender === "kadin" ? "Kadın" : "Erkek"}</b>
+              </span>
+              <span>
+                <small>Durum</small>
+                <b>{userToView.status === "aktif" ? "Aktif" : userToView.status === "bekliyor" ? "Bekliyor" : "Pasif"}</b>
+              </span>
+              <span>
+                <small>Kayıt Tarihi</small>
+                <b>{userToView.createdAt}</b>
+              </span>
+              <span>
+                <small>Erişim Kapsamı</small>
+                <b>{userToView.accessScope}</b>
+              </span>
+            </div>
+
+            <div>
+              <small style={{ color: "var(--muted)", fontWeight: 700, fontSize: "11.5px", display: "block", marginBottom: "6px" }}>
+                Erişebildiği Modüller ({userToView.allowedModules.length}):
+              </small>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
+                {userToView.allowedModules.map((m) => (
+                  <span
+                    key={m}
+                    style={{
+                      fontSize: "11px",
+                      padding: "3px 8px",
+                      borderRadius: "5px",
+                      background: "rgba(22, 131, 70, 0.12)",
+                      border: "1px solid rgba(22, 131, 70, 0.25)",
+                      color: "var(--green-700)",
+                      fontWeight: 600,
+                    }}
+                  >
+                    ✓ {m}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <button className="button button-primary" onClick={() => setUserToView(null)}>
+                Kapat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: Düzenleme Modalı */}
+      {userToEdit && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 100,
+            background: "rgba(0, 0, 0, 0.65)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "16px",
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "500px",
+              background: "var(--surface)",
+              border: "1px solid var(--line)",
+              borderRadius: "14px",
+              padding: "20px",
+              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.3)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "16px",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Pencil style={{ color: "var(--green-600)" }} />
+                <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 700 }}>Kullanıcı Düzenle</h3>
+              </div>
+              <button
+                onClick={() => setUserToEdit(null)}
+                style={{ background: "none", border: 0, color: "var(--muted)", cursor: "pointer" }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditUserSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <div>
+                <label style={{ display: "block", fontSize: "12.5px", fontWeight: 600, marginBottom: "4px" }}>
+                  Ad Soyad *
+                </label>
+                <input
+                  type="text"
+                  value={editFormData.fullName}
+                  onChange={(e) => handleNameInput(e.target.value, setEditFormData)}
+                  style={{
+                    width: "100%",
+                    padding: "9px 11px",
+                    borderRadius: "8px",
+                    border: "1px solid var(--line)",
+                    background: "var(--surface-2)",
+                    color: "inherit",
+                    fontSize: "13px",
+                  }}
+                />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "12.5px", fontWeight: 600, marginBottom: "4px" }}>
+                    Cinsiyet *
+                  </label>
+                  <select
+                    value={editFormData.gender}
+                    onChange={(e) => setEditFormData({ ...editFormData, gender: e.target.value as "erkek" | "kadin" })}
+                    style={{
+                      width: "100%",
+                      padding: "9px 11px",
+                      borderRadius: "8px",
+                      border: "1px solid var(--line)",
+                      background: "var(--surface-2)",
+                      color: "inherit",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                    }}
+                  >
+                    <option value="erkek">Erkek (Bay)</option>
+                    <option value="kadin">Kadın (Bayan)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "12.5px", fontWeight: 600, marginBottom: "4px" }}>
+                    Durum *
+                  </label>
+                  <select
+                    value={editFormData.status}
+                    onChange={(e) =>
+                      setEditFormData({ ...editFormData, status: e.target.value as "aktif" | "bekliyor" | "pasif" })
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "9px 11px",
+                      borderRadius: "8px",
+                      border: "1px solid var(--line)",
+                      background: "var(--surface-2)",
+                      color: "inherit",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                    }}
+                  >
+                    <option value="aktif">Aktif</option>
+                    <option value="bekliyor">Bekliyor</option>
+                    <option value="pasif">Pasif</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "12.5px", fontWeight: 600, marginBottom: "4px" }}>
+                    Telefon No (10 Hane) *
+                  </label>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <span
+                      style={{
+                        padding: "9px 10px",
+                        borderRadius: "8px",
+                        border: "1px solid var(--line)",
+                        background: "var(--surface-2)",
+                        fontSize: "13px",
+                        fontWeight: 700,
+                      }}
+                    >
+                      +90
+                    </span>
+                    <input
+                      type="tel"
+                      value={editFormData.phone}
+                      onChange={(e) => handlePhoneInput(e.target.value, setEditFormData)}
+                      maxLength={10}
+                      style={{
+                        width: "100%",
+                        padding: "9px 11px",
+                        borderRadius: "8px",
+                        border: "1px solid var(--line)",
+                        background: "var(--surface-2)",
+                        color: "inherit",
+                        fontSize: "13px",
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "12.5px", fontWeight: 600, marginBottom: "4px" }}>
+                    E-Posta Adresi *
+                  </label>
+                  <input
+                    type="email"
+                    value={editFormData.email}
+                    onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                    style={{
+                      width: "100%",
+                      padding: "9px 11px",
+                      borderRadius: "8px",
+                      border: "1px solid var(--line)",
+                      background: "var(--surface-2)",
+                      color: "inherit",
+                      fontSize: "13px",
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "12.5px", fontWeight: 600, marginBottom: "4px" }}>
+                  Kullanıcı Ünvanı / İşletme Rolü *
+                </label>
+                <select
+                  value={editFormData.title}
+                  onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value as UserTitle })}
+                  style={{
+                    width: "100%",
+                    padding: "9px 11px",
+                    borderRadius: "8px",
+                    border: "1px solid var(--line)",
+                    background: "var(--surface-2)",
+                    color: "inherit",
+                    fontSize: "13px",
+                    fontWeight: 600,
+                  }}
+                >
+                  {TITLE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "10px" }}>
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  onClick={() => setUserToEdit(null)}
+                >
+                  İptal
+                </button>
+                <button type="submit" className="button button-primary">
+                  Değişiklikleri Kaydet
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: Silme Onay Uyarısı */}
+      {userToDeleteConfirm && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 110,
+            background: "rgba(0, 0, 0, 0.7)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "16px",
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "420px",
+              background: "var(--surface)",
+              border: "1px solid var(--line)",
+              borderRadius: "14px",
+              padding: "20px",
+              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.4)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "14px",
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                width: "48px",
+                height: "48px",
+                borderRadius: "50%",
+                background: "rgba(239, 68, 68, 0.12)",
+                border: "1px solid rgba(239, 68, 68, 0.3)",
+                color: "var(--red)",
+                display: "grid",
+                placeItems: "center",
+                margin: "0 auto",
+              }}
+            >
+              <AlertTriangle size={24} />
+            </div>
+
+            <div>
+              <h3 style={{ margin: "0 0 6px", fontSize: "17px", fontWeight: 700 }}>
+                Kullanıcı Hesabını Sil?
+              </h3>
+              <p style={{ margin: 0, fontSize: "13px", color: "var(--muted)", lineHeight: 1.45 }}>
+                <strong style={{ color: "var(--text)" }}>{userToDeleteConfirm.name}</strong> ({userToDeleteConfirm.title}) kullanıcısını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+              </p>
+            </div>
+
+            <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
+              <button
+                type="button"
+                className="button button-secondary"
+                style={{ flex: 1, justifyContent: "center" }}
+                onClick={() => setUserToDeleteConfirm(null)}
+              >
+                İptal
+              </button>
+              <button
+                type="button"
+                className="button button-danger"
+                style={{ flex: 1, justifyContent: "center", background: "var(--red)", color: "white" }}
+                onClick={confirmDeleteUser}
+              >
+                Evet, Kullanıcıyı Sil
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: Yeni Kullanıcı Ekle */}
       {showAddModal && (
         <div
           style={{
@@ -534,21 +1014,21 @@ export function UsersView() {
                 <input
                   type="text"
                   placeholder="Örn: Ayşe Kaya"
-                  value={formData.fullName}
-                  onChange={(e) => handleNameChange(e.target.value)}
+                  value={addFormData.fullName}
+                  onChange={(e) => handleNameInput(e.target.value, setAddFormData)}
                   style={{
                     width: "100%",
                     padding: "9px 11px",
                     borderRadius: "8px",
-                    border: formErrors.fullName ? "1px solid var(--red)" : "1px solid var(--line)",
+                    border: addFormErrors.fullName ? "1px solid var(--red)" : "1px solid var(--line)",
                     background: "var(--surface-2)",
                     color: "inherit",
                     fontSize: "13px",
                   }}
                 />
-                {formErrors.fullName && (
+                {addFormErrors.fullName && (
                   <span style={{ color: "var(--red)", fontSize: "11px", marginTop: "2px", display: "block" }}>
-                    {formErrors.fullName}
+                    {addFormErrors.fullName}
                   </span>
                 )}
               </div>
@@ -559,8 +1039,8 @@ export function UsersView() {
                     Cinsiyet *
                   </label>
                   <select
-                    value={formData.gender}
-                    onChange={(e) => setFormData({ ...formData, gender: e.target.value as "erkek" | "kadin" })}
+                    value={addFormData.gender}
+                    onChange={(e) => setAddFormData({ ...addFormData, gender: e.target.value as "erkek" | "kadin" })}
                     style={{
                       width: "100%",
                       padding: "9px 11px",
@@ -585,7 +1065,7 @@ export function UsersView() {
                     <div className="topbar-avatar-wrap" style={{ width: "32px", height: "32px" }}>
                       <Image
                         src={
-                          formData.gender === "kadin"
+                          addFormData.gender === "kadin"
                             ? "/assets/profile_farmer_female.png"
                             : "/assets/profile_farmer.png"
                         }
@@ -596,7 +1076,7 @@ export function UsersView() {
                       />
                     </div>
                     <small style={{ color: "var(--muted)", fontSize: "11.5px" }}>
-                      {formData.gender === "kadin" ? "Kadın Çiftçi Görseli" : "Erkek Çiftçi Görseli"}
+                      {addFormData.gender === "kadin" ? "Kadın Çiftçi Görseli" : "Erkek Çiftçi Görseli"}
                     </small>
                   </div>
                 </div>
@@ -623,23 +1103,23 @@ export function UsersView() {
                     <input
                       type="tel"
                       placeholder="5XX XXX XX XX"
-                      value={formData.phone}
-                      onChange={(e) => handlePhoneChange(e.target.value)}
+                      value={addFormData.phone}
+                      onChange={(e) => handlePhoneInput(e.target.value, setAddFormData)}
                       maxLength={10}
                       style={{
                         width: "100%",
                         padding: "9px 11px",
                         borderRadius: "8px",
-                        border: formErrors.phone ? "1px solid var(--red)" : "1px solid var(--line)",
+                        border: addFormErrors.phone ? "1px solid var(--red)" : "1px solid var(--line)",
                         background: "var(--surface-2)",
                         color: "inherit",
                         fontSize: "13px",
                       }}
                     />
                   </div>
-                  {formErrors.phone && (
+                  {addFormErrors.phone && (
                     <span style={{ color: "var(--red)", fontSize: "11px", marginTop: "2px", display: "block" }}>
-                      {formErrors.phone}
+                      {addFormErrors.phone}
                     </span>
                   )}
                 </div>
@@ -651,24 +1131,24 @@ export function UsersView() {
                   <input
                     type="email"
                     placeholder="ornek@basaranciftligim.com"
-                    value={formData.email}
+                    value={addFormData.email}
                     onChange={(e) => {
-                      setFormData({ ...formData, email: e.target.value });
-                      if (formErrors.email) setFormErrors((prev) => ({ ...prev, email: undefined }));
+                      setAddFormData({ ...addFormData, email: e.target.value });
+                      if (addFormErrors.email) setAddFormErrors((prev) => ({ ...prev, email: undefined }));
                     }}
                     style={{
                       width: "100%",
                       padding: "9px 11px",
                       borderRadius: "8px",
-                      border: formErrors.email ? "1px solid var(--red)" : "1px solid var(--line)",
+                      border: addFormErrors.email ? "1px solid var(--red)" : "1px solid var(--line)",
                       background: "var(--surface-2)",
                       color: "inherit",
                       fontSize: "13px",
                     }}
                   />
-                  {formErrors.email && (
+                  {addFormErrors.email && (
                     <span style={{ color: "var(--red)", fontSize: "11px", marginTop: "2px", display: "block" }}>
-                      {formErrors.email}
+                      {addFormErrors.email}
                     </span>
                   )}
                 </div>
@@ -679,8 +1159,8 @@ export function UsersView() {
                   Kullanıcı Ünvanı / İşletme Rolü *
                 </label>
                 <select
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value as UserTitle })}
+                  value={addFormData.title}
+                  onChange={(e) => setAddFormData({ ...addFormData, title: e.target.value as UserTitle })}
                   style={{
                     width: "100%",
                     padding: "9px 11px",
@@ -716,7 +1196,7 @@ export function UsersView() {
                   Seçilen Ünvan Erişim Kapsamı:
                 </small>
                 <span style={{ fontSize: "12px", fontWeight: 600 }}>
-                  {TITLE_CONFIG[formData.title].accessScope}
+                  {TITLE_CONFIG[addFormData.title].accessScope}
                 </span>
               </div>
 
