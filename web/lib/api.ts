@@ -29,6 +29,7 @@ export type ApiUser = {
   role: string;
   jobTitle?: string | null;
   avatarUrl?: string | null;
+  gender?: "erkek" | "kadin";
   farm?: string | null;
 };
 

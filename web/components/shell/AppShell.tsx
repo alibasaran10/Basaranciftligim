@@ -242,13 +242,20 @@ function Topbar({ openAlerts }: { openAlerts: number | null }) {
           {!!openAlerts && <b>{openAlerts}</b>}
         </Link>
         <Link className="topbar-user" href="/ayarlar">
-          <Image
-            src={user?.avatarUrl || "/assets/profile_farmer.png"}
-            alt=""
-            width={38}
-            height={38}
-            unoptimized
-          />
+          <div className="topbar-avatar-wrap">
+            <Image
+              src={
+                user?.avatarUrl ||
+                (user?.gender === "kadin"
+                  ? "/assets/profile_farmer_female.png"
+                  : "/assets/profile_farmer.png")
+              }
+              alt=""
+              width={38}
+              height={38}
+              unoptimized
+            />
+          </div>
           <span>
             <strong>{user?.name ?? "—"}</strong>
             <small>{user?.jobTitle ?? "Kullanıcı"}</small>

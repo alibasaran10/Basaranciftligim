@@ -19,6 +19,7 @@ import {
   Wrench,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import { Badge } from "@/components/ui/Badge";
@@ -44,6 +45,8 @@ type AppUserItem = {
   name: string;
   email: string;
   phone: string;
+  gender: "erkek" | "kadin";
+  avatarUrl?: string;
   title: UserTitle;
   accessScope: string;
   allowedModules: string[];
@@ -104,6 +107,8 @@ const INITIAL_USERS: AppUserItem[] = [
     name: "Ali Başaran",
     email: "ali@basaranciftligim.com",
     phone: "+90 532 111 22 33",
+    gender: "erkek",
+    avatarUrl: "/assets/profile_farmer.png",
     title: "İşletme Sahibi",
     accessScope: TITLE_CONFIG["İşletme Sahibi"].accessScope,
     allowedModules: TITLE_CONFIG["İşletme Sahibi"].allowedModules,
@@ -115,6 +120,8 @@ const INITIAL_USERS: AppUserItem[] = [
     name: "Mehmet Yılmaz",
     email: "mehmet@basaranciftligim.com",
     phone: "+90 533 222 33 44",
+    gender: "erkek",
+    avatarUrl: "/assets/profile_farmer.png",
     title: "İşletme Yöneticisi",
     accessScope: TITLE_CONFIG["İşletme Yöneticisi"].accessScope,
     allowedModules: TITLE_CONFIG["İşletme Yöneticisi"].allowedModules,
@@ -126,6 +133,8 @@ const INITIAL_USERS: AppUserItem[] = [
     name: "Dr. Ayşe Kaya",
     email: "ayse.kaya@vetmed.com",
     phone: "+90 535 333 44 55",
+    gender: "kadin",
+    avatarUrl: "/assets/profile_farmer_female.png",
     title: "Veteriner Hekim",
     accessScope: TITLE_CONFIG["Veteriner Hekim"].accessScope,
     allowedModules: TITLE_CONFIG["Veteriner Hekim"].allowedModules,
@@ -137,6 +146,8 @@ const INITIAL_USERS: AppUserItem[] = [
     name: "Ahmet Demir",
     email: "ahmet@basaranciftligim.com",
     phone: "+90 542 444 55 66",
+    gender: "erkek",
+    avatarUrl: "/assets/profile_farmer.png",
     title: "Ziraat Görevlisi",
     accessScope: TITLE_CONFIG["Ziraat Görevlisi"].accessScope,
     allowedModules: TITLE_CONFIG["Ziraat Görevlisi"].allowedModules,
@@ -148,6 +159,8 @@ const INITIAL_USERS: AppUserItem[] = [
     name: "Caner Öztürk",
     email: "caner@basaranciftligim.com",
     phone: "+90 555 555 66 77",
+    gender: "erkek",
+    avatarUrl: "/assets/profile_farmer.png",
     title: "Operatör",
     accessScope: TITLE_CONFIG["Operatör"].accessScope,
     allowedModules: TITLE_CONFIG["Operatör"].allowedModules,
@@ -159,6 +172,8 @@ const INITIAL_USERS: AppUserItem[] = [
     name: "Mustafa Şahin",
     email: "mustafa@basaranciftligim.com",
     phone: "+90 536 666 77 88",
+    gender: "erkek",
+    avatarUrl: "/assets/profile_farmer.png",
     title: "Çalışan",
     accessScope: TITLE_CONFIG["Çalışan"].accessScope,
     allowedModules: TITLE_CONFIG["Çalışan"].allowedModules,
@@ -202,6 +217,7 @@ export function UsersView() {
     fullName: "",
     email: "",
     phone: "",
+    gender: "erkek" as "erkek" | "kadin",
     title: "İşletme Yöneticisi" as UserTitle,
     status: "aktif" as "aktif" | "bekliyor" | "pasif",
   });
@@ -264,11 +280,15 @@ export function UsersView() {
     }
 
     const config = TITLE_CONFIG[formData.title];
+    const avatar = formData.gender === "kadin" ? "/assets/profile_farmer_female.png" : "/assets/profile_farmer.png";
+
     const newUser: AppUserItem = {
       id: `usr-${Date.now()}`,
       name: formData.fullName.trim(),
       email: formData.email.trim(),
       phone: `+90 ${formData.phone}`,
+      gender: formData.gender,
+      avatarUrl: avatar,
       title: formData.title,
       accessScope: config.accessScope,
       allowedModules: config.allowedModules,
@@ -282,6 +302,7 @@ export function UsersView() {
       fullName: "",
       email: "",
       phone: "",
+      gender: "erkek",
       title: "İşletme Yöneticisi",
       status: "aktif",
     });
@@ -293,7 +314,7 @@ export function UsersView() {
     const userToDelete = filteredUsers[index];
     if (!userToDelete) return;
     setUsers((prev) => prev.filter((u) => u.id !== userToDelete.id));
-    dispatch(showToast(`${userToDelete.name} kullanıcı hesab kaldırıldı.`));
+    dispatch(showToast(`${userToDelete.name} kullanıcı hesabı kaldırıldı.`));
   };
 
   const rows = filteredUsers.map((u) => {
@@ -301,10 +322,19 @@ export function UsersView() {
     const statusLabel =
       u.status === "aktif" ? "Aktif" : u.status === "bekliyor" ? "Bekliyor" : "Pasif";
 
+    const userAvatar =
+      u.avatarUrl ||
+      (u.gender === "kadin" ? "/assets/profile_farmer_female.png" : "/assets/profile_farmer.png");
+
     return [
-      <div key={u.id} style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-        <strong>{u.name}</strong>
-        <small style={{ color: "var(--muted)", fontSize: "11.5px" }}>{u.phone}</small>
+      <div key={u.id} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <div className="topbar-avatar-wrap" style={{ width: "34px", height: "34px" }}>
+          <Image src={userAvatar} alt="" width={34} height={34} unoptimized />
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+          <strong>{u.name}</strong>
+          <small style={{ color: "var(--muted)", fontSize: "11.5px" }}>{u.phone}</small>
+        </div>
       </div>,
       u.email,
       <Badge key={`title-${u.id}`} tone={config.tone}>
@@ -503,7 +533,7 @@ export function UsersView() {
                 </label>
                 <input
                   type="text"
-                  placeholder="Örn: Mehmet Yılmaz"
+                  placeholder="Örn: Ayşe Kaya"
                   value={formData.fullName}
                   onChange={(e) => handleNameChange(e.target.value)}
                   style={{
@@ -521,6 +551,55 @@ export function UsersView() {
                     {formErrors.fullName}
                   </span>
                 )}
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "12.5px", fontWeight: 600, marginBottom: "4px" }}>
+                    Cinsiyet *
+                  </label>
+                  <select
+                    value={formData.gender}
+                    onChange={(e) => setFormData({ ...formData, gender: e.target.value as "erkek" | "kadin" })}
+                    style={{
+                      width: "100%",
+                      padding: "9px 11px",
+                      borderRadius: "8px",
+                      border: "1px solid var(--line)",
+                      background: "var(--surface-2)",
+                      color: "inherit",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                    }}
+                  >
+                    <option value="erkek">Erkek (Bay)</option>
+                    <option value="kadin">Kadın (Bayan)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "12.5px", fontWeight: 600, marginBottom: "4px" }}>
+                    Varsayılan Görsel
+                  </label>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", paddingTop: "4px" }}>
+                    <div className="topbar-avatar-wrap" style={{ width: "32px", height: "32px" }}>
+                      <Image
+                        src={
+                          formData.gender === "kadin"
+                            ? "/assets/profile_farmer_female.png"
+                            : "/assets/profile_farmer.png"
+                        }
+                        alt=""
+                        width={32}
+                        height={32}
+                        unoptimized
+                      />
+                    </div>
+                    <small style={{ color: "var(--muted)", fontSize: "11.5px" }}>
+                      {formData.gender === "kadin" ? "Kadın Çiftçi Görseli" : "Erkek Çiftçi Görseli"}
+                    </small>
+                  </div>
+                </div>
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>

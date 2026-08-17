@@ -51,6 +51,22 @@ function ProfilePhotoSection() {
   const currentUser = useAppSelector((state) => state.session.user);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const currentGender = currentUser?.gender || "erkek";
+  const defaultAvatar = currentGender === "kadin" ? "/assets/profile_farmer_female.png" : "/assets/profile_farmer.png";
+
+  const handleGenderChange = (newGender: "erkek" | "kadin") => {
+    if (!currentUser) return;
+    const newAvatar = newGender === "kadin" ? "/assets/profile_farmer_female.png" : "/assets/profile_farmer.png";
+    dispatch(setUser({ ...currentUser, gender: newGender, avatarUrl: newAvatar }));
+    try {
+      localStorage.setItem("user_gender", newGender);
+      localStorage.setItem("user_avatar", newAvatar);
+    } catch {
+      // Fallback
+    }
+    dispatch(showToast(`Cinsiyet ${newGender === "kadin" ? "Kadın" : "Erkek"} olarak güncellendi.`));
+  };
+
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -83,7 +99,7 @@ function ProfilePhotoSection() {
 
   const handleRemovePhoto = () => {
     if (currentUser) {
-      dispatch(setUser({ ...currentUser, avatarUrl: "/assets/profile_farmer.png" }));
+      dispatch(setUser({ ...currentUser, avatarUrl: defaultAvatar }));
       try {
         localStorage.removeItem("user_avatar");
       } catch {
@@ -104,7 +120,7 @@ function ProfilePhotoSection() {
       />
       <div className="profile-avatar-wrapper">
         <Image
-          src={currentUser?.avatarUrl || "/assets/profile_farmer.png"}
+          src={currentUser?.avatarUrl || defaultAvatar}
           alt="Profil Fotoğrafı"
           width={76}
           height={76}
@@ -112,9 +128,49 @@ function ProfilePhotoSection() {
         />
       </div>
       <div className="profile-avatar-info">
-        <strong>{currentUser?.name ?? "Ali Başaran"}</strong>
-        <small>{currentUser?.jobTitle ?? "İşletme Sahibi"}</small>
-        <div className="profile-avatar-btns">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <strong>{currentUser?.name ?? "Ali Başaran"}</strong>
+            <small style={{ display: "block" }}>{currentUser?.jobTitle ?? "İşletme Sahibi"}</small>
+          </div>
+          {/* Cinsiyet Seçim Butonları */}
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ fontSize: "11.5px", color: "var(--muted)", fontWeight: 600 }}>Cinsiyet:</span>
+            <button
+              type="button"
+              onClick={() => handleGenderChange("erkek")}
+              style={{
+                padding: "4px 9px",
+                fontSize: "11.5px",
+                borderRadius: "6px",
+                border: currentGender === "erkek" ? "1px solid var(--green-600)" : "1px solid var(--line)",
+                background: currentGender === "erkek" ? "rgba(22, 131, 70, 0.15)" : "var(--surface)",
+                color: currentGender === "erkek" ? "var(--green-700)" : "var(--muted)",
+                fontWeight: 650,
+                cursor: "pointer",
+              }}
+            >
+              Erkek
+            </button>
+            <button
+              type="button"
+              onClick={() => handleGenderChange("kadin")}
+              style={{
+                padding: "4px 9px",
+                fontSize: "11.5px",
+                borderRadius: "6px",
+                border: currentGender === "kadin" ? "1px solid var(--purple)" : "1px solid var(--line)",
+                background: currentGender === "kadin" ? "rgba(135, 100, 204, 0.15)" : "var(--surface)",
+                color: currentGender === "kadin" ? "var(--purple)" : "var(--muted)",
+                fontWeight: 650,
+                cursor: "pointer",
+              }}
+            >
+              Kadın
+            </button>
+          </div>
+        </div>
+        <div className="profile-avatar-btns" style={{ marginTop: "8px" }}>
           <button
             type="button"
             className="button button-primary"
@@ -123,14 +179,14 @@ function ProfilePhotoSection() {
           >
             <Upload size={14} /> Fotoğraf Yükle / Değiştir
           </button>
-          {currentUser?.avatarUrl && currentUser.avatarUrl !== "/assets/profile_farmer.png" && (
+          {currentUser?.avatarUrl && currentUser.avatarUrl !== defaultAvatar && (
             <button
               type="button"
               className="button button-secondary"
               style={{ padding: "6px 10px", fontSize: "12px", color: "var(--red)" }}
               onClick={handleRemovePhoto}
             >
-              <Trash2 size={14} /> Kaldır
+              <Trash2 size={14} /> Varsayılana Sıfırla
             </button>
           )}
         </div>
