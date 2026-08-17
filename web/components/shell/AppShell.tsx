@@ -241,9 +241,6 @@ function Topbar({ openAlerts }: { openAlerts: number | null }) {
           <Bell />
           {!!openAlerts && <b>{openAlerts}</b>}
         </Link>
-        <button className="icon-button" aria-label="Yardım">
-          <CircleHelp />
-        </button>
         <Link className="topbar-user" href="/ayarlar">
           <Image
             src={user?.avatarUrl || "/assets/profile_farmer.png"}

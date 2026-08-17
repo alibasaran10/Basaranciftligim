@@ -9,8 +9,12 @@ import {
   Settings,
   ShieldCheck,
   Smartphone,
+  Trash2,
+  Upload,
+  User,
 } from "lucide-react";
-import { FormEvent, useState } from "react";
+import Image from "next/image";
+import { ChangeEvent, FormEvent, useRef, useState } from "react";
 
 import { ErrorState, SkeletonBlock } from "@/components/ui/AsyncState";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -19,7 +23,8 @@ import { api } from "@/lib/api";
 import { formatDate, formatNumber } from "@/lib/format";
 import type { FarmSettings } from "@/lib/types";
 import { useApi } from "@/lib/useApi";
-import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { setUser } from "@/store/slices/sessionSlice";
 import { showToast } from "@/store/slices/uiSlice";
 
 /** Ayarlar kartlari <-> backend tercih anahtarlari eslemesi. */
@@ -41,6 +46,99 @@ const BUSINESS_TYPES = [
   "Diğer",
 ];
 
+function ProfilePhotoSection() {
+  const dispatch = useAppDispatch();
+  const currentUser = useAppSelector((state) => state.session.user);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      dispatch(showToast("Lütfen geçerli bir görsel dosyası seçin (PNG, JPG, WEBP)."));
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      dispatch(showToast("Görsel boyutu 5 MB'dan küçük olmalıdır."));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (currentUser) {
+        dispatch(setUser({ ...currentUser, avatarUrl: dataUrl }));
+        try {
+          localStorage.setItem("user_avatar", dataUrl);
+        } catch {
+          // LocalStorage quota fallback
+        }
+      }
+      dispatch(showToast("Profil fotoğrafınız başarıyla güncellendi."));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemovePhoto = () => {
+    if (currentUser) {
+      dispatch(setUser({ ...currentUser, avatarUrl: "/assets/profile_farmer.png" }));
+      try {
+        localStorage.removeItem("user_avatar");
+      } catch {
+        // Fallback
+      }
+    }
+    dispatch(showToast("Profil fotoğrafınız varsayılana sıfırlandı."));
+  };
+
+  return (
+    <div className="profile-avatar-card">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={handleFileChange}
+      />
+      <div className="profile-avatar-wrapper">
+        <Image
+          src={currentUser?.avatarUrl || "/assets/profile_farmer.png"}
+          alt="Profil Fotoğrafı"
+          width={76}
+          height={76}
+          unoptimized
+        />
+      </div>
+      <div className="profile-avatar-info">
+        <strong>{currentUser?.name ?? "Ali Başaran"}</strong>
+        <small>{currentUser?.jobTitle ?? "İşletme Sahibi"}</small>
+        <div className="profile-avatar-btns">
+          <button
+            type="button"
+            className="button button-primary"
+            style={{ padding: "6px 12px", fontSize: "12px" }}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Upload size={14} /> Fotoğraf Yükle / Değiştir
+          </button>
+          {currentUser?.avatarUrl && currentUser.avatarUrl !== "/assets/profile_farmer.png" && (
+            <button
+              type="button"
+              className="button button-secondary"
+              style={{ padding: "6px 10px", fontSize: "12px", color: "var(--red)" }}
+              onClick={handleRemovePhoto}
+            >
+              <Trash2 size={14} /> Kaldır
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function BusinessForm({
   business,
   onSubmit,
@@ -56,13 +154,11 @@ function BusinessForm({
   const [phoneError, setPhoneError] = useState("");
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Sadece harf ve boşluk (rakam engellenir), max 50 karakter
     const value = e.target.value.replace(/[0-9]/g, "").slice(0, 50);
     setName(value);
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Sadece rakam (harf engellenir), tam 10 hane
     const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
     setPhone(value);
     if (value.length > 0 && value.length < 10) {
@@ -90,7 +186,7 @@ function BusinessForm({
 
   return (
     <form className="settings-form" onSubmit={handleSubmit}>
-      <label>
+      <label style={{ gridColumn: "1 / -1" }}>
         İşletme Adı
         <input
           required
@@ -131,7 +227,7 @@ function BusinessForm({
           </small>
         )}
       </label>
-      <label>
+      <label style={{ gridColumn: "1 / -1" }}>
         E-posta (İsteğe bağlı)
         <input
           name="email"
@@ -140,7 +236,7 @@ function BusinessForm({
           placeholder="ornek@isletme.com"
         />
       </label>
-      <button className="button button-primary" type="submit" disabled={saving}>
+      <button className="button button-primary" type="submit" disabled={saving} style={{ gridColumn: "1 / -1" }}>
         <Save /> {saving ? "Kaydediliyor…" : "Değişiklikleri Kaydet"}
       </button>
     </form>
@@ -151,10 +247,6 @@ export function SettingsView() {
   const dispatch = useAppDispatch();
   const { data, loading, error, refetch } = useApi<FarmSettings>("/farm/settings");
 
-  /**
-   * Tercihler sunucudan gelir; kullanicinin yaptigi degisiklikler yalnizca
-   * "overrides" olarak tutulup uzerine bindirilir.
-   */
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState(false);
 
@@ -195,9 +287,9 @@ export function SettingsView() {
     <div className="page-stack page-enter">
       <PageHeader
         title="Ayarlar"
-        description="Hesap, işletme, cihaz ve sistem tercihlerinizi yönetin."
+        description="Hesap, işletme, profil fotoğrafı, cihaz ve sistem tercihlerinizi yönetin."
         icon={<Settings />}
-        primaryLabel="Kaydet"
+        showActions={false}
       />
 
       {error && <ErrorState message={error} onRetry={refetch} />}
@@ -228,7 +320,8 @@ export function SettingsView() {
       </div>
 
       <div className="settings-columns">
-        <Panel title="İşletme Bilgileri">
+        <Panel title="Profil Fotoğrafı & İşletme Bilgileri">
+          <ProfilePhotoSection />
           {data ? (
             <BusinessForm
               key={data.business.id}
