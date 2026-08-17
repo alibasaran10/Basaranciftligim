@@ -150,7 +150,7 @@ export function LoginScreen() {
                   type={showPassword ? "text" : "password"}
                   required
                   autoComplete="current-password"
-                  defaultValue="Parola123"
+                  defaultValue="Parola00"
                   placeholder="Şifrenizi giriniz"
                 />
                 <button

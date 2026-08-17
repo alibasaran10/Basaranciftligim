@@ -153,7 +153,7 @@ async function seedFarmAndUsers() {
   const owner = await User.create({
     name: 'Ali Başaran',
     email: 'info@basaranciftligi.com',
-    password: 'Parola123',
+    password: 'Parola00',
     role: ROLES.ADMIN,
     phone: '+90 555 123 45 67',
     birthDate: dateAt(1985, 6, 15),
@@ -221,7 +221,7 @@ async function seedFarmAndUsers() {
     {
       name: 'Hasan Demir',
       email: 'hasan@basaranciftligi.com',
-      password: 'Parola123',
+      password: 'Parola00',
       role: ROLES.FARMER,
       farm: farm._id,
       phone: '+90 555 222 11 08',
@@ -233,7 +233,7 @@ async function seedFarmAndUsers() {
     {
       name: 'Ayşe Yılmaz',
       email: 'ayse@basaranciftligi.com',
-      password: 'Parola123',
+      password: 'Parola00',
       role: ROLES.FARMER,
       farm: farm._id,
       phone: '+90 555 333 90 24',
@@ -245,7 +245,7 @@ async function seedFarmAndUsers() {
     {
       name: 'Ali Yıldız',
       email: 'ali@basaranciftligi.com',
-      password: 'Parola123',
+      password: 'Parola00',
       role: ROLES.VIEWER,
       farm: farm._id,
       phone: '+90 555 444 76 12',
@@ -257,7 +257,7 @@ async function seedFarmAndUsers() {
     {
       name: 'Teknik Ekip',
       email: 'destek@entegresuru.com',
-      password: 'Parola123',
+      password: 'Parola00',
       role: ROLES.VIEWER,
       farm: farm._id,
       jobTitle: 'Destek',
@@ -1626,7 +1626,7 @@ async function run() {
   console.log(`Raporlar     : ${reportCount}`);
   console.log(`Alarmlar     : ${alertCount}`);
   console.log(`Telemetri    : ${telemetryCount} kayit`);
-  console.log('\nGiris: info@basaranciftligi.com / Parola123');
+  console.log('\nGiris: info@basaranciftligi.com / Parola00');
   console.log('\nCihaz API anahtarlari (simulasyon icin, x-device-key):');
   for (const d of devicesInfo) {
     console.log(`  ${d.mac}  (${d.animal})  ->  ${d.apiKey}`);

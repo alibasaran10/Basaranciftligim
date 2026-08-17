@@ -1,6 +1,6 @@
 import http from 'http';
 
-const loginData = JSON.stringify({ email: 'info@basaranciftligi.com', password: 'Parola123' });
+const loginData = JSON.stringify({ email: 'info@basaranciftligi.com', password: 'Parola00' });
 
 const req = http.request({
   hostname: 'localhost',
