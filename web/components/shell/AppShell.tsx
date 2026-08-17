@@ -54,7 +54,6 @@ const nav = [
   { label: "Sürü Yönetimi", href: "/suru", icon: Beef },
   { label: "Tarla Yönetimi", href: "/tarlalar", icon: Sprout },
   { label: "Mahsul / Stok", href: "/stok", icon: PackageOpen },
-  { label: "Ekim / Hasat", href: "/ekim-hasat", icon: Leaf },
   { label: "Alarmlar", href: "/alarmlar", icon: AlarmClock, badge: "alerts" },
   { label: "Takvim", href: "/takvim", icon: CalendarDays },
   { label: "Kameralar", href: "/kameralar", icon: Camera },
