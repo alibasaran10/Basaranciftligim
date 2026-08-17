@@ -19,7 +19,7 @@ import {
   Wrench,
   X,
 } from "lucide-react";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import { Badge } from "@/components/ui/Badge";
 import { DataTable } from "@/components/ui/DataTable";
@@ -189,6 +189,13 @@ export function UsersView() {
   const [selectedTitle, setSelectedTitle] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
+  const addModalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (showAddModal && addModalRef.current) {
+      addModalRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [showAddModal]);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -462,6 +469,7 @@ export function UsersView() {
           }}
         >
           <div
+            ref={addModalRef}
             style={{
               width: "100%",
               maxWidth: "520px",
