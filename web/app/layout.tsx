@@ -32,8 +32,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase,
     title: {
-      default: "Entegre Sürü | Akıllı Çiftlik Yönetimi",
-      template: "%s | Entegre Sürü",
+      default: "Basaranciftligim | Yenilikçi Çiftlik Yönetim Sistemi",
+      template: "%s | Basaranciftligim",
     },
     description,
     icons: {

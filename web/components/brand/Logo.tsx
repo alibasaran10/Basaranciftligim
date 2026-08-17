@@ -8,10 +8,11 @@ export function Logo({ compact = false }: { compact?: boolean }) {
       </span>
       {!compact && (
         <span>
-          <strong>ENTEGRE SÜRÜ</strong>
-          <small>SÜRÜ & ÇİFTLİK YÖNETİM SİSTEMİ</small>
+          <strong>Basaranciftligim</strong>
+          <small>YENİLİKÇİ ÇİFTLİK YÖNETİM SİSTEMİ</small>
         </span>
       )}
     </div>
   );
 }
+

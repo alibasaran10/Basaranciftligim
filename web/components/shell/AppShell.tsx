@@ -165,16 +165,10 @@ function Sidebar({
                 Planı Yükselt
               </button>
             </div>
-            <button
-              className="help-card"
-              onClick={() => dispatch(showToast("Yardım merkezi açıldı."))}
-            >
+            <Link href="/yardim" className="help-card">
               <CircleHelp />
-              <span>
-                <strong>Yardım Merkezi</strong>
-                <small>Dokümantasyon ve destek</small>
-              </span>
-            </button>
+              <strong>Yardım Merkezi</strong>
+            </Link>
           </>
         )}
         <button className="collapse-button" onClick={() => dispatch(toggleSidebar())}>
