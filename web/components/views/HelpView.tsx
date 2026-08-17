@@ -193,11 +193,7 @@ export function HelpView() {
         title="Yardım Merkezi ve Kullanım Kılavuzu"
         description="Basaranciftligim platformu kullanımı hakkında sıkça sorulan sorular, modül rehberleri ve direkt teknik destek kanalları."
         icon={<CircleHelp />}
-        primaryLabel="Sorun Bildir"
-        onPrimaryClick={() => {
-          const el = document.getElementById("support-form-card");
-          if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-        }}
+        showActions={false}
       />
 
       <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: "16px", alignItems: "start" }}>
