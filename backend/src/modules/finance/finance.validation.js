@@ -7,7 +7,7 @@ import {
 } from '../../common/constants.js';
 import { objectId } from '../../common/validation/common.schemas.js';
 
-const isoDate = z.string().datetime({ offset: true });
+const isoDate = z.string();
 
 export const createTransactionSchema = z
   .object({

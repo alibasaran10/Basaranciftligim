@@ -89,6 +89,7 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
 
   // Form states for Add/Edit
   const [editForm, setEditForm] = useState({
+    date: new Date().toISOString().split("T")[0],
     amount: "",
     status: "tamamlandi",
     description: "",
@@ -165,6 +166,7 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
 
   const handleOpenAddModal = () => {
     setEditForm({
+      date: new Date().toISOString().split("T")[0],
       amount: "",
       status: "tamamlandi",
       description: "",
@@ -177,7 +179,14 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
 
   const handleOpenEditModal = (tx: FinanceTransactionRow) => {
     setSelectedEditTx(tx);
+    let formattedDate = new Date().toISOString().split("T")[0];
+    if (tx.date) {
+      try {
+        formattedDate = new Date(tx.date).toISOString().split("T")[0];
+      } catch {}
+    }
     setEditForm({
+      date: formattedDate,
       amount: String(tx.amount || ""),
       status: tx.status || "tamamlandi",
       description: tx.description || "",
@@ -196,6 +205,10 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
     }
     setSubmitting(true);
     try {
+      const selectedDateISO = editForm.date
+        ? new Date(editForm.date + "T12:00:00.000Z").toISOString()
+        : new Date().toISOString();
+
       await api.post("/finance/transactions", {
         type: apiType,
         amount: numAmount,
@@ -204,12 +217,13 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
         category: editForm.category,
         counterparty: editForm.counterparty,
         paymentMethod: editForm.paymentMethod,
-        date: new Date().toISOString(),
+        date: selectedDateISO,
       });
       dispatch(showToast(`${income ? "Gelir" : "Gider"} kaydı başarıyla eklendi.`));
       setShowAddModal(false);
       refetchAll();
-    } catch {
+    } catch (err: any) {
+      console.error("Add transaction error:", err);
       dispatch(showToast("Kayıt eklenirken bir hata oluştu."));
     } finally {
       setSubmitting(false);
@@ -226,6 +240,10 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
     }
     setSubmitting(true);
     try {
+      const selectedDateISO = editForm.date
+        ? new Date(editForm.date + "T12:00:00.000Z").toISOString()
+        : new Date().toISOString();
+
       await api.patch(`/finance/transactions/${selectedEditTx.id}`, {
         amount: numAmount,
         status: editForm.status,
@@ -233,11 +251,13 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
         category: editForm.category,
         counterparty: editForm.counterparty,
         paymentMethod: editForm.paymentMethod,
+        date: selectedDateISO,
       });
       dispatch(showToast("İşlem kaydı başarıyla güncellendi."));
       setSelectedEditTx(null);
       refetchAll();
-    } catch {
+    } catch (err: any) {
+      console.error("Edit transaction error:", err);
       dispatch(showToast("Kayıt güncellenirken bir hata oluştu."));
     } finally {
       setSubmitting(false);
@@ -940,6 +960,19 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                 <div>
                   <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    İşlem Tarihi *
+                  </label>
+                  <input
+                    required
+                    type="date"
+                    value={editForm.date}
+                    onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit", fontWeight: 600 }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
                     Tutar (TL) *
                   </label>
                   <input
@@ -952,21 +985,21 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
                     style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit", fontWeight: 600 }}
                   />
                 </div>
+              </div>
 
-                <div>
-                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
-                    Durum
-                  </label>
-                  <select
-                    value={editForm.status}
-                    onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
-                  >
-                    <option value="tamamlandi">{income ? "Tahsil Edildi" : "Ödendi"}</option>
-                    <option value="beklemede">Beklemede</option>
-                    <option value="kismi">Kısmi Ödeme</option>
-                  </select>
-                </div>
+              <div>
+                <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                  Durum
+                </label>
+                <select
+                  value={editForm.status}
+                  onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                >
+                  <option value="tamamlandi">{income ? "Tahsil Edildi" : "Ödendi"}</option>
+                  <option value="beklemede">Beklemede</option>
+                  <option value="kismi">Kısmi Ödeme</option>
+                </select>
               </div>
 
               <div>
@@ -1113,6 +1146,19 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                 <div>
                   <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    İşlem Tarihi *
+                  </label>
+                  <input
+                    required
+                    type="date"
+                    value={editForm.date}
+                    onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit", fontWeight: 600 }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
                     Tutar (TL) *
                   </label>
                   <input
@@ -1125,21 +1171,21 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
                     style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit", fontWeight: 600 }}
                   />
                 </div>
+              </div>
 
-                <div>
-                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
-                    Durum
-                  </label>
-                  <select
-                    value={editForm.status}
-                    onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
-                  >
-                    <option value="tamamlandi">{income ? "Tahsil Edildi" : "Ödendi"}</option>
-                    <option value="beklemede">Beklemede</option>
-                    <option value="kismi">Kısmi Ödeme</option>
-                  </select>
-                </div>
+              <div>
+                <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                  Durum
+                </label>
+                <select
+                  value={editForm.status}
+                  onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                >
+                  <option value="tamamlandi">{income ? "Tahsil Edildi" : "Ödendi"}</option>
+                  <option value="beklemede">Beklemede</option>
+                  <option value="kismi">Kısmi Ödeme</option>
+                </select>
               </div>
 
               <div>
