@@ -65,7 +65,6 @@ export function ModuleGrid({ compact = false }: { compact?: boolean }) {
             </span>
             <h3>{title}</h3>
             <p>{text}</p>
-            <span className="module-link">Detayları keşfedin →</span>
           </article>
         </Reveal>
       ))}

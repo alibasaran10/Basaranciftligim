@@ -16,6 +16,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 
+import { FarmMapAndWeather } from "@/components/dashboard/FarmMapAndWeather";
 import { BarsChart, DonutChart, TrendChart } from "@/components/ui/Charts";
 import { ErrorState, Skeleton, SkeletonBlock } from "@/components/ui/AsyncState";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -216,25 +217,6 @@ export function DashboardView() {
               ))}
             </div>
           </Panel>
-          <Panel title="Hızlı İşlemler">
-            <div className="quick-actions">
-              {[
-                [Beef, "Yeni Hayvan Ekle", "/suru"],
-                [Sprout, "Yeni Tarla Ekle", "/tarlalar"],
-                [AlarmClock, "Alarm İncele", "/alarmlar"],
-                [PackageOpen, "Rapor Oluştur", "/raporlar"],
-              ].map(([Icon, label, href]) => {
-                const ItemIcon = Icon as typeof Beef;
-                return (
-                  <Link key={label as string} href={href as string}>
-                    <ItemIcon />
-                    <b>+</b>
-                    <span>{label as string}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          </Panel>
         </div>
 
         <div className="dashboard-main-column">
@@ -299,29 +281,14 @@ export function DashboardView() {
               {data?.camera?.isRecording && <span>CANLI</span>}
             </Link>
           </Panel>
-          <div className="dashboard-mini-grid">
-            <Panel title="Hava Durumu">
-              <div className="weather">
-                <CloudSun />
-                <strong>
-                  {data?.weather ? `${Math.round(data.weather.temperature)}°C` : <Skeleton width={54} height={20} />}
-                </strong>
-                <span>{data?.weather?.condition ?? "—"}</span>
-              </div>
-            </Panel>
-            <Panel title="Çiftlik Haritası">
-              <Image
-                className="mini-map"
-                src={data?.mapImageUrl || "/assets/farm_map.png"}
-                alt="Çiftlik haritası"
-                width={320}
-                height={180}
-                unoptimized
-              />
-            </Panel>
-          </div>
         </div>
       </div>
+
+      <Reveal delay={200}>
+        <div style={{ marginTop: "16px" }}>
+          <FarmMapAndWeather />
+        </div>
+      </Reveal>
     </div>
   );
 }

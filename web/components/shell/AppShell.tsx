@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
 import { api } from "@/lib/api";
@@ -78,6 +78,7 @@ function Sidebar({
 }) {
   const dispatch = useAppDispatch();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const collapsed = useAppSelector((state) => state.ui.sidebarCollapsed);
   const mobileOpen = useAppSelector((state) => state.ui.mobileMenuOpen);
   const user = useAppSelector((state) => state.session.user);
@@ -108,7 +109,8 @@ function Sidebar({
           {nav.map((item) => {
             const active =
               pathname === item.href ||
-              (item.href !== "/dashboard" && pathname.startsWith(item.href));
+              (item.href !== "/dashboard" && pathname.startsWith(item.href)) ||
+              (item.href === "/tarlalar" && pathname.startsWith("/ekim-hasat"));
             const count = "badge" in item ? openAlerts : null;
             return (
               <div className="nav-item-wrap" key={item.href}>
@@ -121,21 +123,75 @@ function Sidebar({
                   <item.icon />
                   <span>{item.label}</span>
                   {!!count && <b>{count}</b>}
-                  {(item.href === "/finans" || item.href === "/tarlalar") &&
+                  {(item.href === "/finans" || item.href === "/tarlalar" || item.href === "/takvim") &&
                     !collapsed && <ChevronDown />}
                 </Link>
                 {item.href === "/finans" && active && !collapsed && (
                   <div className="nav-submenu">
-                    <Link href="/finans">Genel Bakış</Link>
-                    <Link href="/finans/gelirler">Gelirler</Link>
-                    <Link href="/finans/giderler">Giderler</Link>
+                    <Link
+                      href="/finans"
+                      className={pathname === "/finans" ? "is-active" : ""}
+                      onClick={() => dispatch(setMobileMenu(false))}
+                    >
+                      Genel Bakış
+                    </Link>
+                    <Link
+                      href="/finans/gelirler"
+                      className={pathname.startsWith("/finans/gelirler") ? "is-active" : ""}
+                      onClick={() => dispatch(setMobileMenu(false))}
+                    >
+                      Gelirler
+                    </Link>
+                    <Link
+                      href="/finans/giderler"
+                      className={pathname.startsWith("/finans/giderler") ? "is-active" : ""}
+                      onClick={() => dispatch(setMobileMenu(false))}
+                    >
+                      Giderler
+                    </Link>
                   </div>
                 )}
                 {item.href === "/tarlalar" && active && !collapsed && (
                   <div className="nav-submenu">
-                    <Link href="/tarlalar">Tarlalarım</Link>
-                    <Link href="/ekim-hasat">Ekim / Hasat Kayıtları</Link>
-                    <Link href="/stok">Stok Yönetimi</Link>
+                    <Link
+                      href="/tarlalar"
+                      className={pathname === "/tarlalar" || pathname.startsWith("/tarlalar/") ? "is-active" : ""}
+                      onClick={() => dispatch(setMobileMenu(false))}
+                    >
+                      Tarlalarım
+                    </Link>
+                    <Link
+                      href="/ekim-hasat"
+                      className={pathname.startsWith("/ekim-hasat") ? "is-active" : ""}
+                      onClick={() => dispatch(setMobileMenu(false))}
+                    >
+                      Ekim / Hasat Kayıtları
+                    </Link>
+                  </div>
+                )}
+                {item.href === "/takvim" && active && !collapsed && (
+                  <div className="nav-submenu">
+                    <Link
+                      href="/takvim?tab=gunum"
+                      className={!searchParams.get("tab") || searchParams.get("tab") === "gunum" ? "is-active" : ""}
+                      onClick={() => dispatch(setMobileMenu(false))}
+                    >
+                      Takvim Görünümü
+                    </Link>
+                    <Link
+                      href="/takvim?tab=notlar"
+                      className={searchParams.get("tab") === "notlar" ? "is-active" : ""}
+                      onClick={() => dispatch(setMobileMenu(false))}
+                    >
+                      Notlar
+                    </Link>
+                    <Link
+                      href="/takvim?tab=yakindakiler"
+                      className={searchParams.get("tab") === "yakindakiler" ? "is-active" : ""}
+                      onClick={() => dispatch(setMobileMenu(false))}
+                    >
+                      Yakındakiler
+                    </Link>
                   </div>
                 )}
               </div>

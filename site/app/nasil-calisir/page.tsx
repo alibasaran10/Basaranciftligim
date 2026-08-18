@@ -144,7 +144,6 @@ export default function HowItWorksPage() {
                 <Icon />
                 <h3>{title}</h3>
                 <p>{text}</p>
-                <button className="text-button">Detayları Gör →</button>
               </article>
             </Reveal>
           ))}

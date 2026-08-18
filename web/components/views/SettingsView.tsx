@@ -16,6 +16,7 @@ import {
 import Image from "next/image";
 import { ChangeEvent, FormEvent, useRef, useState } from "react";
 
+import { FarmLocationSettingsCard } from "@/components/settings/FarmLocationSettingsCard";
 import { ErrorState, SkeletonBlock } from "@/components/ui/AsyncState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Panel } from "@/components/ui/Panel";
@@ -373,6 +374,10 @@ export function SettingsView() {
             </Panel>
           );
         })}
+      </div>
+
+      <div style={{ marginTop: "16px", marginBottom: "16px" }}>
+        <FarmLocationSettingsCard />
       </div>
 
       <div className="settings-columns">

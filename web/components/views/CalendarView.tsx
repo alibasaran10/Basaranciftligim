@@ -22,6 +22,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import { CalendarBoard } from "@/components/calendar/CalendarBoard";
@@ -167,10 +168,23 @@ const INITIAL_UPCOMING: UpcomingEventItem[] = [
 
 export function CalendarView() {
   const dispatch = useAppDispatch();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab") as CalendarTab | null;
+
   const today = new Date();
 
   // Sub-tabs State: "gunum" | "notlar" | "yakindakiler"
   const [activeTab, setActiveTab] = useState<CalendarTab>("gunum");
+
+  useEffect(() => {
+    if (tabParam === "notlar") {
+      setActiveTab("notlar");
+    } else if (tabParam === "yakindakiler") {
+      setActiveTab("yakindakiler");
+    } else {
+      setActiveTab("gunum");
+    }
+  }, [tabParam]);
 
   const [cursor, setCursor] = useState({
     year: today.getFullYear(),
@@ -301,76 +315,6 @@ export function CalendarView() {
 
       {error && <ErrorState message={error} onRetry={refetch} />}
 
-      {/* ALT BAR / SUB-TABS NAVİGASYONU (GÜNÜM - NOTLAR - YAKINDAKİLER) */}
-      <div
-        className="tabs"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          borderBottom: "1px solid var(--line)",
-          marginBottom: "16px",
-          paddingBottom: "2px",
-        }}
-      >
-        <button
-          type="button"
-          className={activeTab === "gunum" ? "is-active" : ""}
-          onClick={() => setActiveTab("gunum")}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            padding: "10px 18px",
-            fontSize: "13.5px",
-            fontWeight: activeTab === "gunum" ? 750 : 600,
-            cursor: "pointer",
-            borderRadius: "8px 8px 0 0",
-          }}
-        >
-          <CalendarDays size={16} />
-          GÜNÜM
-        </button>
-
-        <button
-          type="button"
-          className={activeTab === "notlar" ? "is-active" : ""}
-          onClick={() => setActiveTab("notlar")}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            padding: "10px 18px",
-            fontSize: "13.5px",
-            fontWeight: activeTab === "notlar" ? 750 : 600,
-            cursor: "pointer",
-            borderRadius: "8px 8px 0 0",
-          }}
-        >
-          <StickyNote size={16} />
-          NOTLAR ({notes.length})
-        </button>
-
-        <button
-          type="button"
-          className={activeTab === "yakindakiler" ? "is-active" : ""}
-          onClick={() => setActiveTab("yakindakiler")}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            padding: "10px 18px",
-            fontSize: "13.5px",
-            fontWeight: activeTab === "yakindakiler" ? 750 : 600,
-            cursor: "pointer",
-            borderRadius: "8px 8px 0 0",
-          }}
-        >
-          <Clock size={16} />
-          YAKINDAKİLER ({upcomingEvents.length})
-        </button>
-      </div>
-
       {/* ========================================================================= */}
       {/* SEKMEYE GÖRE İÇERİK */}
       {/* ========================================================================= */}
@@ -428,7 +372,7 @@ export function CalendarView() {
             />
           </div>
 
-          <div className="calendar-layout">
+          <div className="calendar-layout" style={{ gridTemplateColumns: "1fr" }}>
             <Panel>
               <CalendarBoard
                 month={month}
@@ -439,112 +383,6 @@ export function CalendarView() {
                 }
               />
             </Panel>
-
-            <div className="calendar-sidebar">
-              <Panel title="Bugünkü Ajanda">
-                <div className="agenda-list">
-                  {!summary && <SkeletonBlock rows={4} height={26} />}
-                  {summary?.todayAgenda.map((item) => (
-                    <span key={item.id}>
-                      <time>{item.time}</time>
-                      <b>{item.title}</b>
-                      <small>{item.meta || "—"}</small>
-                    </span>
-                  ))}
-                  {summary?.todayAgenda.length === 0 && (
-                    <span>
-                      <time>—</time>
-                      <b>Bugün etkinlik yok</b>
-                      <small>Takviminiz boş görünüyor.</small>
-                    </span>
-                  )}
-                </div>
-              </Panel>
-
-              <Panel title="Yaklaşan Doğumlar" action={<Link href="/suru">Sürüye Git</Link>}>
-                <div className="compact-list">
-                  {!summary && <SkeletonBlock rows={3} height={30} />}
-                  {summary?.upcomingBirthList.map((animal) => (
-                    <Link key={animal.id} href={`/suru/${animal.id}`}>
-                      <UsersRound />
-                      <span>
-                        <strong>{animal.earTag}</strong>
-                        <small>
-                          {[animal.breed, animal.ageLabel].filter(Boolean).join(" · ")}
-                        </small>
-                      </span>
-                      <b>{animal.daysLeft} gün</b>
-                    </Link>
-                  ))}
-                </div>
-              </Panel>
-
-              <Panel title="Son Hatırlatmalar" action={<Link href="/alarmlar">Tümü</Link>}>
-                <div className="alert-list">
-                  {!summary && <SkeletonBlock rows={2} height={30} />}
-                  {summary?.reminders.map((reminder) => (
-                    <span
-                      key={reminder.id}
-                      className={reminder.severity === "kritik" ? "alert-red" : "alert-orange"}
-                    >
-                      <AlarmClock />
-                      <b>{reminder.title}</b>
-                      <small>
-                        {reminder.message} · {formatRelative(reminder.createdAt)}
-                      </small>
-                    </span>
-                  ))}
-                </div>
-              </Panel>
-            </div>
-          </div>
-
-          <div className="module-bottom-grid">
-            <Panel title="Haftalık Operasyon Planı">
-              <div className="compact-list">
-                {!summary && <SkeletonBlock rows={5} height={30} />}
-                {summary?.weeklyPlan.map((day) => (
-                  <div key={day.date}>
-                    <CalendarDays />
-                    <span>
-                      <strong>{day.label}</strong>
-                      <small>
-                        {day.count} etkinlik · {day.irrigation} sulama
-                      </small>
-                    </span>
-                    <b>Planlı</b>
-                  </div>
-                ))}
-              </div>
-            </Panel>
-
-            <Panel title="Görev Dağılımı">
-              <div className="progress-list">
-                {!summary && <SkeletonBlock rows={4} height={22} />}
-                {summary?.assigneeLoad.map((person) => (
-                  <span key={person.name}>
-                    <UsersRound />
-                    <b>{person.name}</b>
-                    <i>
-                      <em style={{ width: `${person.percent}%` }} />
-                    </i>
-                    <small>{person.count}</small>
-                  </span>
-                ))}
-              </div>
-            </Panel>
-
-            <Panel title="Etkinlik Türleri">
-              <div className="info-grid">
-                {!summary && <SkeletonBlock rows={3} height={24} />}
-                {summary?.typeCounts.slice(0, 6).map((item) => (
-                  <span key={item.type}>
-                    <small>{item.name}</small>
-                    <b>{item.count}</b>
-                  </span>
-                ))}
-              </div>
-            </Panel>
           </div>
         </div>
       )}
@@ -552,6 +390,48 @@ export function CalendarView() {
       {/* 2. SEKMELER: NOTLAR */}
       {activeTab === "notlar" && (
         <div className="page-stack page-enter">
+          <Panel title="📋 Bugünkü Ajanda & Planlanan Etkinlikler">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "10px" }}>
+              {!summary && <SkeletonBlock rows={3} height={40} />}
+              {summary?.todayAgenda.map((item) => (
+                <div
+                  key={item.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "12px 14px",
+                    background: "var(--surface-2)",
+                    border: "1px solid var(--line)",
+                    borderRadius: "10px",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <span
+                      style={{
+                        fontSize: "12px",
+                        fontWeight: 750,
+                        padding: "4px 8px",
+                        borderRadius: "6px",
+                        background: "var(--surface-3)",
+                        color: "var(--text)",
+                      }}
+                    >
+                      {item.time}
+                    </span>
+                    <strong style={{ fontSize: "14px" }}>{item.title}</strong>
+                  </div>
+                  <small style={{ color: "var(--muted)", fontSize: "12px" }}>{item.meta || "—"}</small>
+                </div>
+              ))}
+              {summary?.todayAgenda.length === 0 && (
+                <div style={{ gridColumn: "1 / -1", padding: "14px", color: "var(--muted)", fontSize: "13px" }}>
+                  Bugün için kayıtlı ajanda etkinliği yok. Takviminiz boş görünüyor.
+                </div>
+              )}
+            </div>
+          </Panel>
+
           <Panel
             title="Takvim Üzerindeki Notlar"
             action={
@@ -673,6 +553,72 @@ export function CalendarView() {
       {/* 3. SEKMELER: YAKINDAKİLER */}
       {activeTab === "yakindakiler" && (
         <div className="page-stack page-enter">
+          <Panel
+            title="🐮 Yaklaşan Doğumlar (Sürü Biyolojik Takvimi)"
+            action={
+              <Link href="/suru" className="button button-secondary" style={{ padding: "4px 10px", fontSize: "12px" }}>
+                Sürüye Git →
+              </Link>
+            }
+          >
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "12px" }}>
+              {!summary && <SkeletonBlock rows={3} height={50} />}
+              {summary?.upcomingBirthList.map((animal) => (
+                <div
+                  key={animal.id}
+                  style={{
+                    padding: "14px 16px",
+                    borderRadius: "10px",
+                    background: "var(--surface-2)",
+                    border: "1px solid var(--line)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "12px",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <div
+                      style={{
+                        width: "38px",
+                        height: "38px",
+                        borderRadius: "50%",
+                        background: "rgba(135, 100, 204, 0.15)",
+                        color: "var(--purple)",
+                        display: "grid",
+                        placeItems: "center",
+                      }}
+                    >
+                      <UsersRound size={18} />
+                    </div>
+                    <div>
+                      <strong style={{ fontSize: "14.5px", display: "block" }}>{animal.earTag}</strong>
+                      <small style={{ color: "var(--muted)", fontSize: "12px" }}>
+                        {[animal.breed, animal.ageLabel].filter(Boolean).join(" · ")}
+                      </small>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <Badge tone="purple" style={{ marginBottom: "4px", display: "inline-block" }}>
+                      {animal.daysLeft} gün kaldı
+                    </Badge>
+                    <Link
+                      href={`/suru/${animal.id}`}
+                      style={{ fontSize: "11.5px", color: "var(--green-700)", fontWeight: 600, display: "block" }}
+                    >
+                      İncele →
+                    </Link>
+                  </div>
+                </div>
+              ))}
+              {summary?.upcomingBirthList.length === 0 && (
+                <div style={{ gridColumn: "1 / -1", padding: "16px", color: "var(--muted)", fontSize: "13px" }}>
+                  Önümüzdeki 15 gün içinde beklenen bir doğum bulunmuyor.
+                </div>
+              )}
+            </div>
+          </Panel>
+
           <Panel title="Yaklaşan Faaliyetler ve Takvim İşleri (Gelecek 30 Gün)">
             {/* Tür Filtre Butonları */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "16px" }}>

@@ -36,6 +36,9 @@ html[data-theme="dark"] {
   --line: #273a31;
   --line-strong: #385044;
   --green-100: #163b2a;
+  --green-600: #22c55e;
+  --green-700: #34d399;
+  --green-800: #4ade80;
   --chart-line: #2a3b33;
   --shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
   --shadow-lg: 0 24px 70px rgba(0, 0, 0, 0.42);
@@ -653,9 +656,27 @@ img {
 
 .nav-submenu a {
   min-height: 33px;
-  padding: 5px 11px;
-  color: rgba(255, 255, 255, 0.82);
+  padding: 6px 11px;
+  color: rgba(255, 255, 255, 0.72);
+  border-radius: 6px;
   font-size: 13px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all 0.15s ease;
+}
+
+.nav-submenu a:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.nav-submenu a.is-active {
+  color: var(--green-600);
+  background: rgba(34, 197, 94, 0.16);
+  font-weight: 700;
 }
 
 .sidebar-spacer {
@@ -2555,17 +2576,18 @@ img {
 }
 
 .segmented-control button {
-  min-width: 45px;
-  padding: 6px 10px;
+  min-width: 48px;
+  padding: 6px 12px;
   border: 0;
   border-radius: 6px;
   background: transparent;
-  font-size: 9px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .segmented-control .is-active {
   color: white;
-  background: var(--green-700);
+  background: var(--green-600);
 }
 
 .calendar-grid {
@@ -2574,71 +2596,107 @@ img {
 }
 
 .calendar-grid > b {
-  padding: 9px;
+  padding: 10px 8px;
   color: var(--muted);
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   text-align: center;
-  font-size: 9px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
 .calendar-grid > div {
-  min-height: 90px;
-  display: grid;
-  align-content: start;
-  gap: 4px;
-  padding: 6px;
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 5px;
+  padding: 8px;
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
+  box-sizing: border-box;
 }
 
 .calendar-grid > div > strong {
-  width: 20px;
-  height: 20px;
+  width: 26px;
+  height: 26px;
   display: grid;
   place-items: center;
-  font-size: 9px;
+  font-size: 12.5px;
+  font-weight: 750;
+  border-radius: 6px;
+  flex-shrink: 0;
+  margin-bottom: 2px;
 }
 
 .calendar-grid > div.is-today > strong {
   color: white;
   border-radius: 50%;
   background: var(--green-600);
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
 }
 
 .calendar-grid > div.is-muted {
   color: var(--muted);
-  background: var(--surface-2);
+  opacity: 0.55;
+  background: rgba(0, 0, 0, 0.08);
 }
 
 .calendar-grid > div span {
   overflow: hidden;
-  padding: 4px 5px;
+  padding: 5px 8px;
   color: var(--green-700);
-  border: 1px solid rgba(22, 131, 70, 0.15);
-  border-radius: 5px;
-  background: rgba(22, 131, 70, 0.06);
-  font-size: 7px;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  border-radius: 6px;
+  background: rgba(52, 211, 153, 0.12);
+  font-size: 11.5px;
+  font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+html[data-theme="light"] .calendar-grid > div span {
+  color: #046c37;
+  border-color: rgba(4, 108, 55, 0.25);
+  background: rgba(4, 108, 55, 0.08);
+}
+
 .calendar-grid .event-tone-1 {
-  color: var(--blue);
-  border-color: rgba(47, 126, 219, 0.15);
-  background: rgba(47, 126, 219, 0.07);
+  color: #60a5fa;
+  border-color: rgba(96, 165, 250, 0.3);
+  background: rgba(96, 165, 250, 0.12);
+}
+
+html[data-theme="light"] .calendar-grid .event-tone-1 {
+  color: #1d4ed8;
+  border-color: rgba(29, 78, 216, 0.25);
+  background: rgba(29, 78, 216, 0.08);
 }
 
 .calendar-grid .event-tone-2 {
-  color: var(--orange);
-  border-color: rgba(241, 154, 21, 0.2);
-  background: rgba(241, 154, 21, 0.08);
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.3);
+  background: rgba(241, 154, 21, 0.14);
+}
+
+html[data-theme="light"] .calendar-grid .event-tone-2 {
+  color: #b45309;
+  border-color: rgba(180, 83, 9, 0.25);
+  background: rgba(180, 83, 9, 0.08);
 }
 
 .calendar-grid .event-tone-3 {
-  color: var(--purple);
-  border-color: rgba(135, 91, 208, 0.2);
-  background: rgba(135, 91, 208, 0.08);
+  color: #c084fc;
+  border-color: rgba(192, 132, 252, 0.3);
+  background: rgba(135, 91, 208, 0.14);
+}
+
+html[data-theme="light"] .calendar-grid .event-tone-3 {
+  color: #7e22ce;
+  border-color: rgba(126, 34, 206, 0.25);
+  background: rgba(126, 34, 206, 0.08);
 }
 
 .calendar-grid.view-week > div:nth-of-type(n + 8),
