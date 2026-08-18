@@ -10,6 +10,7 @@ import {
   CloudSun,
   Compass,
   Droplets,
+  Globe,
   MapPin,
   Settings,
   Sun,
@@ -56,7 +57,7 @@ export function FarmMapAndWeather() {
     const syncFarms = () => {
       const list = getSavedFarmsList();
       setFarms(list);
-      if (list.length > 0 && (!activeFarmId || !list.some((f) => f.id === activeFarmId))) {
+      if (list.length > 0 && (!activeFarmId || (activeFarmId !== "all" && !list.some((f) => f.id === activeFarmId)))) {
         setActiveFarmId(list[0].id);
       }
     };
@@ -128,7 +129,7 @@ export function FarmMapAndWeather() {
   const weatherMeta = activeWeather ? getWeatherIconAndLabel(activeWeather.code) : null;
   const WeatherIcon = weatherMeta?.icon ?? CloudSun;
 
-  // Generate interactive Leaflet HTML for iframe srcDoc (Places pins for ALL saved farms & zooms automatically)
+  // Generate interactive Leaflet HTML (Zooms directly into activeFarmId if selected, or fits all bounds if activeFarmId === "all")
   const mapSrcDoc = `
 <!DOCTYPE html>
 <html>
@@ -150,6 +151,7 @@ export function FarmMapAndWeather() {
   <div id="map"></div>
   <script>
     const farms = ${JSON.stringify(farms)};
+    const activeFarmId = ${JSON.stringify(activeFarmId)};
     const map = L.map('map', { zoomControl: true });
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -158,16 +160,28 @@ export function FarmMapAndWeather() {
     }).addTo(map);
 
     const bounds = [];
+    let targetMarker = null;
+    let targetCoords = null;
+
     farms.forEach((f) => {
       if (typeof f.lat === 'number' && typeof f.lng === 'number' && !isNaN(f.lat) && !isNaN(f.lng)) {
         const marker = L.marker([f.lat, f.lng]).addTo(map);
+        const isSelected = activeFarmId !== "all" && f.id === activeFarmId;
         marker.bindPopup('<b>📍 ' + (f.name || 'Çiftlik') + '</b><br/><span style="color:#34d399;font-size:11.5px;">Enlem: ' + f.lat.toFixed(4) + '° · Boylam: ' + f.lng.toFixed(4) + '°</span>');
+        
+        if (isSelected) {
+          targetMarker = marker;
+          targetCoords = [f.lat, f.lng];
+        }
         bounds.push([f.lat, f.lng]);
       }
     });
 
-    if (bounds.length === 1) {
-      map.setView(bounds[0], 12);
+    if (activeFarmId !== "all" && targetCoords && targetMarker) {
+      map.setView(targetCoords, 13);
+      setTimeout(() => { targetMarker.openPopup(); }, 350);
+    } else if (bounds.length === 1) {
+      map.setView(bounds[0], 13);
     } else if (bounds.length > 1) {
       map.fitBounds(bounds, { padding: [50, 50] });
     } else {
@@ -180,7 +194,7 @@ export function FarmMapAndWeather() {
 
   return (
     <Panel
-      title={`🌾 Çiftliklerim Haritası ve Canlı Hava Tahmini (${farms.length} Çiftlik Haritada)`}
+      title={`🌾 Çiftliklerim Haritası ve Canlı Hava Tahmini (${farms.length} Çiftlik Kayıtlı)`}
       action={
         <Link
           href="/ayarlar"
@@ -210,11 +224,19 @@ export function FarmMapAndWeather() {
             {/* Multi-Farm Switcher Buttons */}
             {farms.length > 1 && (
               <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "12px" }}>
+                <button
+                  type="button"
+                  className={activeFarmId === "all" ? "button button-primary" : "button button-secondary"}
+                  onClick={() => setActiveFarmId("all")}
+                  style={{ padding: "4px 10px", fontSize: "12px", gap: "4px" }}
+                >
+                  <Globe size={13} /> Tüm Çiftlikler Haritada
+                </button>
                 {farms.map((f) => (
                   <button
                     key={f.id}
                     type="button"
-                    className={selectedFarm?.id === f.id ? "button button-primary" : "button button-secondary"}
+                    className={activeFarmId === f.id ? "button button-primary" : "button button-secondary"}
                     onClick={() => setActiveFarmId(f.id)}
                     style={{ padding: "4px 10px", fontSize: "12px", gap: "4px" }}
                   >
@@ -227,9 +249,11 @@ export function FarmMapAndWeather() {
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                 <MapPin size={16} style={{ color: "var(--green-600)" }} />
-                <strong style={{ fontSize: "14.5px" }}>{selectedFarm?.name}</strong>
+                <strong style={{ fontSize: "14.5px" }}>
+                  {activeFarmId === "all" ? "Tüm Çiftlikler Seçili" : selectedFarm?.name}
+                </strong>
               </div>
-              {selectedFarm && (
+              {activeFarmId !== "all" && selectedFarm && (
                 <span style={{ fontSize: "11px", color: "var(--muted)", background: "var(--surface-3)", padding: "2px 6px", borderRadius: "4px" }}>
                   {selectedFarm.lat.toFixed(2)}°N, {selectedFarm.lng.toFixed(2)}°E
                 </span>
@@ -315,7 +339,7 @@ export function FarmMapAndWeather() {
           )}
         </div>
 
-        {/* Map Embed Card using Leaflet srcDoc (Places pins for ALL saved farms & zooms automatically) */}
+        {/* Map Embed Card using Leaflet srcDoc (Zooms directly into activeFarmId or shows all) */}
         <div
           style={{
             position: "relative",
@@ -355,7 +379,11 @@ export function FarmMapAndWeather() {
           >
             <Compass size={15} style={{ color: "var(--green-400)", flexShrink: 0 }} />
             <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-              <b>{farms.length} Çiftlik İşaretlendi:</b> {farms.map((f) => f.name).join(", ")}
+              {activeFarmId === "all" ? (
+                <><b>{farms.length} Çiftlik Haritada:</b> {farms.map((f) => f.name).join(", ")}</>
+              ) : (
+                <><b>Odaklanan Çiftlik:</b> {selectedFarm?.name} ({selectedFarm?.lat.toFixed(2)}°, {selectedFarm?.lng.toFixed(2)}°)</>
+              )}
             </span>
           </div>
         </div>
