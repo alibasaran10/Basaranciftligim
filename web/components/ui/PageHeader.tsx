@@ -14,6 +14,8 @@ export function PageHeader({
   primaryLabel = "Yeni İşlem",
   compact = false,
   showActions = true,
+  showFilter = true,
+  showDateChevron = true,
   onPrimaryClick,
   onFilterClick,
 }: {
@@ -24,6 +26,8 @@ export function PageHeader({
   primaryLabel?: string;
   compact?: boolean;
   showActions?: boolean;
+  showFilter?: boolean;
+  showDateChevron?: boolean;
   onPrimaryClick?: () => void;
   onFilterClick?: () => void;
 }) {
@@ -41,17 +45,19 @@ export function PageHeader({
       {showActions && (
         <div className="page-actions">
           <button className="button button-secondary">
-            <CalendarDays /> {formatLongDate()} <ChevronDown />
+            <CalendarDays /> {formatLongDate()} {showDateChevron && <ChevronDown />}
           </button>
-          <button
-            className="button button-secondary page-filter-button"
-            onClick={() => {
-              if (onFilterClick) onFilterClick();
-              else dispatch(showToast("Filtreler güncellendi."));
-            }}
-          >
-            <Filter /> Filtrele
-          </button>
+          {showFilter && (
+            <button
+              className="button button-secondary page-filter-button"
+              onClick={() => {
+                if (onFilterClick) onFilterClick();
+                else dispatch(showToast("Filtreler güncellendi."));
+              }}
+            >
+              <Filter /> Filtrele
+            </button>
+          )}
           {title.toLocaleLowerCase("tr-TR").includes("finans") && (
             <button
               className="button button-secondary"

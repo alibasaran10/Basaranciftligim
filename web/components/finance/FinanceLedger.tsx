@@ -73,9 +73,15 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [showAmountFilterModal, setShowAmountFilterModal] = useState(false);
 
-  // Modals state
+  // Modals state & Smooth scroll refs
   const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedViewTx, setSelectedViewTx] = useState<FinanceTransactionRow | null>(null);
+  const [selectedEditTx, setSelectedEditTx] = useState<FinanceTransactionRow | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
   const addModalRef = useRef<HTMLDivElement>(null);
+  const editModalRef = useRef<HTMLDivElement>(null);
+  const viewModalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (showAddModal && addModalRef.current) {
@@ -83,9 +89,17 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
     }
   }, [showAddModal]);
 
-  const [selectedViewTx, setSelectedViewTx] = useState<FinanceTransactionRow | null>(null);
-  const [selectedEditTx, setSelectedEditTx] = useState<FinanceTransactionRow | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  useEffect(() => {
+    if (selectedEditTx && editModalRef.current) {
+      editModalRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [selectedEditTx]);
+
+  useEffect(() => {
+    if (selectedViewTx && viewModalRef.current) {
+      viewModalRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [selectedViewTx]);
 
   // Form states for Add/Edit
   const [editForm, setEditForm] = useState({
@@ -829,6 +843,7 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
           }}
         >
           <div
+            ref={viewModalRef}
             className="modal-content"
             onClick={(e) => e.stopPropagation()}
             style={{
@@ -1113,6 +1128,7 @@ export function FinanceLedger({ type }: { type: "income" | "expense" }) {
           }}
         >
           <div
+            ref={editModalRef}
             className="modal-content"
             onClick={(e) => e.stopPropagation()}
             style={{

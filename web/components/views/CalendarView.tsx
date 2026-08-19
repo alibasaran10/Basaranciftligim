@@ -25,7 +25,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
-import { CalendarBoard } from "@/components/calendar/CalendarBoard";
+import { CalendarBoard, CalendarEventItem } from "@/components/calendar/CalendarBoard";
 import { ErrorState, SkeletonBlock } from "@/components/ui/AsyncState";
 import { Badge } from "@/components/ui/Badge";
 import { DataTable } from "@/components/ui/DataTable";
@@ -166,6 +166,107 @@ const INITIAL_UPCOMING: UpcomingEventItem[] = [
   },
 ];
 
+const INITIAL_CALENDAR_EVENTS: CalendarEventItem[] = [
+  {
+    id: "evt-1",
+    title: "Gebe Sürü Şap Aşısı",
+    date: "2026-08-17",
+    time: "09:00",
+    type: "aşı",
+    priority: "yüksek",
+    status: "planlandı",
+    assignedPerson: "Dr. Ayşe Kaya",
+    location: "Ahır 1",
+    description: "Tüm Holstein ırkı gebe ineklerin ikinci doz şap aşısı.",
+  },
+  {
+    id: "evt-2",
+    title: "Kuzey Tarlası Sulaması",
+    date: "2026-08-18",
+    time: "21:30",
+    type: "sulama",
+    priority: "normal",
+    status: "planlandı",
+    assignedPerson: "Ahmet Demir",
+    location: "Kuzey Tarlası (40 Dönüm)",
+    description: "Damla sulama kanalıyla gece sulama turu.",
+  },
+  {
+    id: "evt-3",
+    title: "TR-3401 Gebe Doğumu",
+    date: "2026-08-19",
+    time: "14:00",
+    type: "doğum",
+    priority: "kritik",
+    status: "kritik",
+    assignedPerson: "Dr. Ayşe Kaya",
+    location: "Doğumhane / Ahır 1",
+    description: "Simmental ırkı gebe düve doğumu bekleniyor.",
+  },
+  {
+    id: "evt-4",
+    title: "John Deere Traktör Bakımı",
+    date: "2026-08-19",
+    time: "10:30",
+    type: "bakım",
+    priority: "normal",
+    status: "hazırlıkta",
+    assignedPerson: "Caner Öztürk",
+    location: "Ekipman Hangarı",
+    description: "250 saat motor yağı ve hidrolik filtre değişimi.",
+  },
+  {
+    id: "evt-5",
+    title: "Rutin Mastitis Taraması",
+    date: "2026-08-20",
+    time: "08:00",
+    type: "veteriner",
+    priority: "normal",
+    status: "planlandı",
+    assignedPerson: "Dr. Ayşe Kaya",
+    location: "Sağımhane B",
+    description: "Sağmal inekler için somatik hücre sayımı testi.",
+  },
+  {
+    id: "evt-6",
+    title: "CIP Süt Tankı Hijyen Yıkaması",
+    date: "2026-08-21",
+    time: "16:00",
+    type: "bakım",
+    priority: "düşük",
+    status: "planlandı",
+    assignedPerson: "Mehmet Yılmaz",
+    location: "Süt Tesisleri",
+    description: "Paslanmaz tankın asidik deterjanla temizliği.",
+  },
+  {
+    id: "evt-7",
+    title: "Yonca 2. Biçim Hasadı",
+    date: "2026-08-23",
+    time: "07:00",
+    type: "hasat",
+    priority: "yüksek",
+    status: "planlandı",
+    assignedPerson: "Ahmet Demir",
+    location: "Güney Tarlası",
+    description: "25 dönümlük yonca tarlasının balyalanması.",
+  },
+];
+
+type AgendaItem = {
+  id: string;
+  time: string;
+  title: string;
+  meta: string;
+};
+
+const INITIAL_AGENDA_ITEMS: AgendaItem[] = [
+  { id: "ag-1", time: "08:30", title: "Süt Tankı CIP Hijyen Yıkaması", meta: "Bölüm B Sağımhane" },
+  { id: "ag-2", time: "10:00", title: "Dr. Ayşe Kaya Rutin Sürü Muayenesi", meta: "Gebe Düve Padok 1" },
+  { id: "ag-3", time: "14:30", title: "Kuzey Tarlası Azotlu Sıvı Gübreleme", meta: "40 Dönüm Mısır Tarlası" },
+  { id: "ag-4", time: "17:00", title: "John Deere Traktör 250 Saat Bakımı", meta: "Teknik Servis Hangar 2" },
+];
+
 export function CalendarView() {
   const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
@@ -211,9 +312,170 @@ export function CalendarView() {
   const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEventItem[]>(INITIAL_UPCOMING);
   const [upcomingTypeFilter, setUpcomingTypeFilter] = useState<string>("all");
 
-  // Modal Refs for Smooth Scroll
+  // Takvim Etkinlikleri (Grid) State & Modals
+  const [calendarEvents, setCalendarEvents] = useState<CalendarEventItem[]>(INITIAL_CALENDAR_EVENTS);
+  const [showAddEventModal, setShowAddEventModal] = useState(false);
+  const [selectedEditEvent, setSelectedEditEvent] = useState<CalendarEventItem | null>(null);
+
+  const [eventForm, setEventForm] = useState<{
+    id?: string;
+    title: string;
+    date: string;
+    time: string;
+    type: string;
+    priority: "yüksek" | "normal" | "düşük" | "kritik";
+    status: "planlandı" | "hazırlıkta" | "tamamlandı" | "kritik";
+    assignedPerson: string;
+    location: string;
+    description: string;
+  }>({
+    title: "",
+    date: new Date().toISOString().split("T")[0],
+    time: "09:00",
+    type: "doğum",
+    priority: "normal",
+    status: "planlandı",
+    assignedPerson: "Dr. Ayşe Kaya",
+    location: "Ahır 1",
+    description: "",
+  });
+
+  const handleOpenAddEventModal = (selectedDate?: string) => {
+    setEventForm({
+      title: "",
+      date: selectedDate || new Date().toISOString().split("T")[0],
+      time: "09:00",
+      type: "doğum",
+      priority: "normal",
+      status: "planlandı",
+      assignedPerson: "Dr. Ayşe Kaya",
+      location: "Ahır 1",
+      description: "",
+    });
+    setShowAddEventModal(true);
+  };
+
+  const handleOpenEditEventModal = (evt: CalendarEventItem) => {
+    setSelectedEditEvent(evt);
+    setEventForm({
+      id: evt.id,
+      title: evt.title || "",
+      date: evt.date || new Date().toISOString().split("T")[0],
+      time: evt.time || "09:00",
+      type: evt.type || "doğum",
+      priority: (evt.priority as any) || "normal",
+      status: (evt.status as any) || "planlandı",
+      assignedPerson: evt.assignedPerson || "",
+      location: evt.location || "",
+      description: evt.description || "",
+    });
+  };
+
+  const handleAddEventSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!eventForm.title.trim() || !eventForm.date) {
+      dispatch(showToast("Lütfen etkinlik başlığını ve tarihini eksiksiz doldurun."));
+      return;
+    }
+
+    const newEvt: CalendarEventItem = {
+      id: `evt-${Date.now()}`,
+      title: eventForm.title.trim(),
+      date: eventForm.date,
+      time: eventForm.time,
+      type: eventForm.type,
+      priority: eventForm.priority,
+      status: eventForm.status,
+      assignedPerson: eventForm.assignedPerson,
+      location: eventForm.location,
+      description: eventForm.description,
+    };
+
+    setCalendarEvents((prev) => [newEvt, ...prev]);
+    setShowAddEventModal(false);
+    dispatch(showToast(`"${newEvt.title}" takvime eklendi.`));
+  };
+
+  const handleEditEventSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!selectedEditEvent || !eventForm.title.trim()) return;
+
+    setCalendarEvents((prev) =>
+      prev.map((e) =>
+        e.id === selectedEditEvent.id
+          ? {
+              ...e,
+              title: eventForm.title.trim(),
+              date: eventForm.date,
+              time: eventForm.time,
+              type: eventForm.type,
+              priority: eventForm.priority,
+              status: eventForm.status,
+              assignedPerson: eventForm.assignedPerson,
+              location: eventForm.location,
+              description: eventForm.description,
+            }
+          : e
+      )
+    );
+    setSelectedEditEvent(null);
+    dispatch(showToast(`"${eventForm.title}" etkinliği güncellendi.`));
+  };
+
+  const handleDeleteEvent = (eventId: string) => {
+    const evtToDelete = calendarEvents.find((e) => e.id === eventId);
+    setCalendarEvents((prev) => prev.filter((e) => e.id !== eventId));
+    setSelectedEditEvent(null);
+    dispatch(showToast(`"${evtToDelete?.title || "Etkinlik"}" takvimden silindi.`));
+  };
+
+  // Günlük Ajanda State & Modal
+  const [agendaItems, setAgendaItems] = useState<AgendaItem[]>(INITIAL_AGENDA_ITEMS);
+  const [showAddAgendaModal, setShowAddAgendaModal] = useState(false);
+  const [agendaForm, setAgendaForm] = useState({
+    time: "10:00",
+    title: "",
+    meta: "",
+  });
+
+  const handleAddAgendaSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!agendaForm.title.trim()) {
+      dispatch(showToast("Lütfen ajanda etkinlik başlığını doldurun."));
+      return;
+    }
+
+    const newItem: AgendaItem = {
+      id: `ag-${Date.now()}`,
+      time: agendaForm.time || "09:00",
+      title: agendaForm.title.trim(),
+      meta: agendaForm.meta.trim() || "—",
+    };
+
+    setAgendaItems((prev) => [...prev, newItem].sort((a, b) => a.time.localeCompare(b.time)));
+    setShowAddAgendaModal(false);
+    setAgendaForm({ time: "10:00", title: "", meta: "" });
+    dispatch(showToast(`"${newItem.title}" günlük ajandaya eklendi.`));
+  };
+
+  // Modal Refs & Smooth Scroll
+  const addEventModalRef = useRef<HTMLDivElement>(null);
+  const editEventModalRef = useRef<HTMLDivElement>(null);
   const addNoteModalRef = useRef<HTMLDivElement>(null);
   const deleteNoteModalRef = useRef<HTMLDivElement>(null);
+  const addAgendaModalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (showAddEventModal && addEventModalRef.current) {
+      addEventModalRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [showAddEventModal]);
+
+  useEffect(() => {
+    if (selectedEditEvent && editEventModalRef.current) {
+      editEventModalRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [selectedEditEvent]);
 
   useEffect(() => {
     if (showAddNoteModal && addNoteModalRef.current) {
@@ -226,6 +488,12 @@ export function CalendarView() {
       deleteNoteModalRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }, [noteToDeleteConfirm]);
+
+  useEffect(() => {
+    if (showAddAgendaModal && addAgendaModalRef.current) {
+      addAgendaModalRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [showAddAgendaModal]);
 
   // Form State (Yeni Not)
   const [newNoteForm, setNewNoteForm] = useState({
@@ -286,16 +554,31 @@ export function CalendarView() {
     dispatch(showToast(`"${title}" takvim notu silindi.`));
   };
 
-  // Filtrelenmiş Notlar
+  const PRIORITY_MAP: Record<string, number> = {
+    yüksek: 1,
+    normal: 2,
+    düşük: 3,
+  };
+
+  // Filtrelenmiş ve Önceliğe & Tarihe Göre Sıralanmış Notlar
   const filteredNotes = useMemo(() => {
-    return notes.filter((n) => {
-      const matchSearch =
-        !noteSearch ||
-        n.title.toLocaleLowerCase("tr-TR").includes(noteSearch.toLocaleLowerCase("tr-TR")) ||
-        n.content.toLocaleLowerCase("tr-TR").includes(noteSearch.toLocaleLowerCase("tr-TR"));
-      const matchCat = !noteCategoryFilter || n.category === noteCategoryFilter;
-      return matchSearch && matchCat;
-    });
+    return notes
+      .filter((n) => {
+        const matchSearch =
+          !noteSearch ||
+          n.title.toLocaleLowerCase("tr-TR").includes(noteSearch.toLocaleLowerCase("tr-TR")) ||
+          n.content.toLocaleLowerCase("tr-TR").includes(noteSearch.toLocaleLowerCase("tr-TR"));
+        const matchCat = !noteCategoryFilter || n.category === noteCategoryFilter;
+        return matchSearch && matchCat;
+      })
+      .sort((a, b) => {
+        const rankA = PRIORITY_MAP[a.priority] ?? 2;
+        const rankB = PRIORITY_MAP[b.priority] ?? 2;
+        if (rankA !== rankB) {
+          return rankA - rankB; // Yüksek (1) -> Normal (2) -> Düşük (3)
+        }
+        return a.date.localeCompare(b.date); // Erken tarihli olan önce
+      });
   }, [notes, noteSearch, noteCategoryFilter]);
 
   // Filtrelenmiş Yakındakiler
@@ -311,6 +594,10 @@ export function CalendarView() {
         description="Çiftliğinizdeki günlük faaliyetleri, takvim notlarını ve yaklaşan kritik etkinlikleri yönetin."
         icon={<CalendarDays />}
         primaryLabel="Yeni Etkinlik"
+        showFilter={false}
+        showDateChevron={false}
+        showActions={activeTab !== "yakindakiler"}
+        onPrimaryClick={() => handleOpenAddEventModal()}
       />
 
       {error && <ErrorState message={error} onRetry={refetch} />}
@@ -377,10 +664,13 @@ export function CalendarView() {
               <CalendarBoard
                 month={month}
                 loading={monthLoading}
+                events={calendarEvents}
                 onNavigate={navigate}
                 onToday={() =>
                   setCursor({ year: today.getFullYear(), month: today.getMonth() + 1 })
                 }
+                onEventClick={(evt) => handleOpenEditEventModal(evt)}
+                onDayClick={(dateStr) => handleOpenAddEventModal(dateStr)}
               />
             </Panel>
           </div>
@@ -390,10 +680,28 @@ export function CalendarView() {
       {/* 2. SEKMELER: NOTLAR */}
       {activeTab === "notlar" && (
         <div className="page-stack page-enter">
-          <Panel title="📋 Bugünkü Ajanda & Planlanan Etkinlikler">
+          <Panel
+            title="📋 Bugünkü Ajanda & Planlanan Etkinlikler"
+            action={
+              <button
+                className="button button-primary"
+                onClick={() => setShowAddAgendaModal(true)}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                  padding: "7px 14px",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                }}
+              >
+                <Plus size={15} /> Ajanda Etkinliği Ekle
+              </button>
+            }
+          >
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "10px" }}>
-              {!summary && <SkeletonBlock rows={3} height={40} />}
-              {summary?.todayAgenda.map((item) => (
+              {agendaItems.map((item) => (
                 <div
                   key={item.id}
                   style={{
@@ -424,7 +732,7 @@ export function CalendarView() {
                   <small style={{ color: "var(--muted)", fontSize: "12px" }}>{item.meta || "—"}</small>
                 </div>
               ))}
-              {summary?.todayAgenda.length === 0 && (
+              {agendaItems.length === 0 && (
                 <div style={{ gridColumn: "1 / -1", padding: "14px", color: "var(--muted)", fontSize: "13px" }}>
                   Bugün için kayıtlı ajanda etkinliği yok. Takviminiz boş görünüyor.
                 </div>
@@ -438,9 +746,17 @@ export function CalendarView() {
               <button
                 className="button button-primary"
                 onClick={() => setShowAddNoteModal(true)}
-                style={{ padding: "6px 12px", fontSize: "12.5px" }}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                  padding: "7px 14px",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                }}
               >
-                <Plus size={15} /> + Yeni Not Ekle
+                <Plus size={15} /> Yeni Not Ekle
               </button>
             }
           >
@@ -1013,6 +1329,484 @@ export function CalendarView() {
                 Evet, Notu Sil
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: Yeni Takvim Etkinliği Ekle (Income/Expense modal stilinde) */}
+      {showAddEventModal && (
+        <div
+          className="modal-backdrop"
+          onClick={() => setShowAddEventModal(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.65)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 999,
+            padding: "16px",
+          }}
+        >
+          <div
+            ref={addEventModalRef}
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "var(--surface)",
+              padding: "26px",
+              borderRadius: "16px",
+              maxWidth: "520px",
+              width: "90%",
+              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.35)",
+              border: "1px solid var(--line)",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <CalendarDays style={{ color: "var(--green-600)" }} />
+                <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 700 }}>Yeni Etkinlik Ekleyin</h3>
+              </div>
+              <button
+                className="icon-button"
+                onClick={() => setShowAddEventModal(false)}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text)" }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddEventSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    Tarih *
+                  </label>
+                  <input
+                    required
+                    type="date"
+                    value={eventForm.date}
+                    onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit", fontWeight: 600 }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    Saat
+                  </label>
+                  <input
+                    type="time"
+                    value={eventForm.time}
+                    onChange={(e) => setEventForm({ ...eventForm, time: e.target.value })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit", fontWeight: 600 }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                  Etkinlik Başlığı *
+                </label>
+                <input
+                  required
+                  type="text"
+                  placeholder="Örn: TR-3401 Gebe Doğum Kontrolü"
+                  value={eventForm.title}
+                  onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    Kategori / Tür
+                  </label>
+                  <select
+                    value={eventForm.type}
+                    onChange={(e) => setEventForm({ ...eventForm, type: e.target.value })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                  >
+                    <option value="doğum">🐮 Doğum</option>
+                    <option value="sulama">💧 Sulama Planı</option>
+                    <option value="veteriner">🩺 Veteriner Muayenesi</option>
+                    <option value="aşı">💉 Aşı & İlaçlama</option>
+                    <option value="hasat">🌾 Hasat & Gübreleme</option>
+                    <option value="bakım">🔧 Ekipman & Bakım</option>
+                    <option value="diğer">📋 Diğer Etkinlik</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    Öncelik Seviyesi
+                  </label>
+                  <select
+                    value={eventForm.priority}
+                    onChange={(e) => setEventForm({ ...eventForm, priority: e.target.value as any })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                  >
+                    <option value="kritik">🔴 Kritik / Acil</option>
+                    <option value="yüksek">🟠 Yüksek Öncelik</option>
+                    <option value="normal">🟢 Normal Öncelik</option>
+                    <option value="düşük">⚪ Düşük Öncelik</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    Sorumlu Kişi
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Örn: Dr. Ayşe Kaya"
+                    value={eventForm.assignedPerson}
+                    onChange={(e) => setEventForm({ ...eventForm, assignedPerson: e.target.value })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    Konum / Saha
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Örn: Ahır 1 / Kuzey Tarlası"
+                    value={eventForm.location}
+                    onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                  Açıklama & Detaylar
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="Etkinlik hakkında operasyonel detaylar..."
+                  value={eventForm.description}
+                  onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit", resize: "vertical" }}
+                />
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "12px" }}>
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  onClick={() => setShowAddEventModal(false)}
+                >
+                  İptal
+                </button>
+                <button type="submit" className="button button-primary">
+                  Etkinliği Kaydet
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: Etkinlik Düzenleme Modalı (Income/Expense modal stilinde) */}
+      {selectedEditEvent && (
+        <div
+          className="modal-backdrop"
+          onClick={() => setSelectedEditEvent(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.65)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 999,
+            padding: "16px",
+          }}
+        >
+          <div
+            ref={editEventModalRef}
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "var(--surface)",
+              padding: "26px",
+              borderRadius: "16px",
+              maxWidth: "520px",
+              width: "90%",
+              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.35)",
+              border: "1px solid var(--line)",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
+              <div>
+                <span className="breadcrumb" style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
+                  ETKİNLİK DÜZENLEME
+                </span>
+                <h3 style={{ margin: "2px 0 0", fontSize: "18px", fontWeight: 700 }}>
+                  {selectedEditEvent.title}
+                </h3>
+              </div>
+              <button
+                className="icon-button"
+                onClick={() => setSelectedEditEvent(null)}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text)" }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditEventSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    Tarih *
+                  </label>
+                  <input
+                    required
+                    type="date"
+                    value={eventForm.date}
+                    onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit", fontWeight: 600 }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    Saat
+                  </label>
+                  <input
+                    type="time"
+                    value={eventForm.time}
+                    onChange={(e) => setEventForm({ ...eventForm, time: e.target.value })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit", fontWeight: 600 }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                  Etkinlik Başlığı *
+                </label>
+                <input
+                  required
+                  type="text"
+                  value={eventForm.title}
+                  onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    Kategori / Tür
+                  </label>
+                  <select
+                    value={eventForm.type}
+                    onChange={(e) => setEventForm({ ...eventForm, type: e.target.value })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                  >
+                    <option value="doğum">🐮 Doğum</option>
+                    <option value="sulama">💧 Sulama Planı</option>
+                    <option value="veteriner">🩺 Veteriner Muayenesi</option>
+                    <option value="aşı">💉 Aşı & İlaçlama</option>
+                    <option value="hasat">🌾 Hasat & Gübreleme</option>
+                    <option value="bakım">🔧 Ekipman & Bakım</option>
+                    <option value="diğer">📋 Diğer Etkinlik</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    Öncelik Seviyesi
+                  </label>
+                  <select
+                    value={eventForm.priority}
+                    onChange={(e) => setEventForm({ ...eventForm, priority: e.target.value as any })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                  >
+                    <option value="kritik">🔴 Kritik / Acil</option>
+                    <option value="yüksek">🟠 Yüksek Öncelik</option>
+                    <option value="normal">🟢 Normal Öncelik</option>
+                    <option value="düşük">⚪ Düşük Öncelik</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    Sorumlu Kişi
+                  </label>
+                  <input
+                    type="text"
+                    value={eventForm.assignedPerson}
+                    onChange={(e) => setEventForm({ ...eventForm, assignedPerson: e.target.value })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    Konum / Saha
+                  </label>
+                  <input
+                    type="text"
+                    value={eventForm.location}
+                    onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                  Açıklama & Detaylar
+                </label>
+                <textarea
+                  rows={3}
+                  value={eventForm.description}
+                  onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit", resize: "vertical" }}
+                />
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px" }}>
+                <button
+                  type="button"
+                  style={{ color: "var(--red)", background: "none", border: "none", cursor: "pointer", fontSize: "0.85rem", fontWeight: 600 }}
+                  onClick={() => handleDeleteEvent(selectedEditEvent.id)}
+                >
+                  Etkinliği Sil
+                </button>
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <button
+                    type="button"
+                    className="button button-secondary"
+                    onClick={() => setSelectedEditEvent(null)}
+                  >
+                    İptal
+                  </button>
+                  <button type="submit" className="button button-primary">
+                    Güncelle
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 5: Yeni Ajanda Etkinliği Ekle */}
+      {showAddAgendaModal && (
+        <div
+          className="modal-backdrop"
+          onClick={() => setShowAddAgendaModal(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.65)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 999,
+            padding: "16px",
+          }}
+        >
+          <div
+            ref={addAgendaModalRef}
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "var(--surface)",
+              padding: "26px",
+              borderRadius: "16px",
+              maxWidth: "460px",
+              width: "90%",
+              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.35)",
+              border: "1px solid var(--line)",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Clock style={{ color: "var(--green-600)" }} />
+                <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 700 }}>Ajandaya Etkinlik Ekle</h3>
+              </div>
+              <button
+                className="icon-button"
+                onClick={() => setShowAddAgendaModal(false)}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text)" }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddAgendaSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "12px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    Saat *
+                  </label>
+                  <input
+                    required
+                    type="time"
+                    value={agendaForm.time}
+                    onChange={(e) => setAgendaForm({ ...agendaForm, time: e.target.value })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit", fontWeight: 600 }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                    Etkinlik / Görev *
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    placeholder="Örn: Süt Tankı CIP Yıkaması"
+                    value={agendaForm.title}
+                    onChange={(e) => setAgendaForm({ ...agendaForm, title: e.target.value })}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "4px" }}>
+                  Konum / Not (Opsiyonel)
+                </label>
+                <input
+                  type="text"
+                  placeholder="Örn: Bölüm B Sağımhane"
+                  value={agendaForm.meta}
+                  onChange={(e) => setAgendaForm({ ...agendaForm, meta: e.target.value })}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
+                />
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "12px" }}>
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  onClick={() => setShowAddAgendaModal(false)}
+                >
+                  İptal
+                </button>
+                <button type="submit" className="button button-primary">
+                  Ajandaya Ekle
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

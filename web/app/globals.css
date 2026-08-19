@@ -3361,24 +3361,50 @@ html[data-theme="light"] .calendar-grid .event-tone-3 {
 /* Modal, toast, animation */
 .modal-backdrop {
   position: fixed;
-  z-index: 100;
+  z-index: 9999;
   inset: 0;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 20px;
-  background: rgba(1, 19, 14, 0.58);
-  backdrop-filter: blur(5px);
-  animation: fade-in 180ms ease both;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  overflow-y: auto;
+  animation: modal-fade 200ms ease both;
 }
 
+.modal-content,
 .action-modal {
+  position: relative;
   width: min(100%, 520px);
-  padding: 20px;
+  max-height: 90vh;
+  overflow-y: auto;
+  margin: auto;
   border: 1px solid var(--line);
   border-radius: 18px;
   background: var(--surface);
-  box-shadow: var(--shadow-lg);
-  animation: card-in 260ms ease both;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+  animation: modal-pop 250ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes modal-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.93) translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .modal-header {

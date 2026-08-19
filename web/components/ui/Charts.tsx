@@ -44,10 +44,14 @@ export function TrendChart({
   data,
   color = "#168346",
   secondary = false,
+  primaryName = "Stok Girişi",
+  secondaryName = "Stok Çıkışı",
 }: {
   data: Array<Record<string, string | number>>;
   color?: string;
   secondary?: boolean;
+  primaryName?: string;
+  secondaryName?: string;
 }) {
   return (
     <div className="chart">
@@ -69,12 +73,23 @@ export function TrendChart({
             tickFormatter={axisTick}
           />
           <Tooltip
-            contentStyle={{ borderRadius: 12, borderColor: "var(--line)" }}
-            formatter={tooltipFormatter}
+            contentStyle={{
+              borderRadius: 12,
+              borderColor: "var(--line)",
+              background: "var(--surface)",
+              color: "var(--text)",
+              boxShadow: "0 10px 25px rgba(0,0,0,0.25)",
+            }}
+            labelStyle={{ color: "var(--text)", fontWeight: 700, marginBottom: "4px" }}
+            formatter={(val: unknown, name: string) => [
+              compactNumber.format(typeof val === "number" ? val : 0),
+              name === "value" ? primaryName : name === "secondary" ? secondaryName : name,
+            ]}
           />
           <Area
             type="monotone"
             dataKey="value"
+            name={primaryName}
             stroke={color}
             strokeWidth={2.5}
             fill={`url(#area-${color.replace("#", "")})`}
@@ -83,6 +98,7 @@ export function TrendChart({
             <Line
               type="monotone"
               dataKey="secondary"
+              name={secondaryName}
               stroke="#6d7784"
               strokeWidth={1.8}
               dot={false}

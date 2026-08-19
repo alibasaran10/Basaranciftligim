@@ -29,7 +29,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { api } from "@/lib/api";
 import { formatDate } from "@/lib/format";
@@ -330,6 +330,14 @@ function GlobalOverlays() {
   const modal = useAppSelector((state) => state.ui.modal);
   const toast = useAppSelector((state) => state.ui.toast);
 
+  const quickModalRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (modal && quickModalRef.current) {
+      quickModalRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [modal]);
+
   useEffect(() => {
     if (!toast) return;
     const timer = window.setTimeout(() => dispatch(clearToast()), 2600);
@@ -341,6 +349,7 @@ function GlobalOverlays() {
       {modal && (
         <div className="modal-backdrop" onMouseDown={() => dispatch(closeModal())}>
           <section
+            ref={quickModalRef}
             className="action-modal"
             role="dialog"
             aria-modal="true"
