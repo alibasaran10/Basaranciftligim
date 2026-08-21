@@ -488,8 +488,7 @@ export function StockView() {
     setShowAddMovementModal(false);
     dispatch(
       showToast(
-        `"${movementForm.itemName}" ürününe ${logAmountText} ${
-          isGiris ? "stok girişi" : "stok çıkışı"
+        `"${movementForm.itemName}" ürününe ${logAmountText} ${isGiris ? "stok girişi" : "stok çıkışı"
         } kaydedildi.`
       )
     );
@@ -570,17 +569,17 @@ export function StockView() {
       prev.map((item) =>
         item.id === selectedEditStockItem.id
           ? {
-              ...item,
-              name: stockItemForm.name.trim(),
-              category: stockItemForm.category,
-              categoryLabel: catLabel,
-              warehouse: stockItemForm.warehouse,
-              quantity: qty,
-              minLevel: minLvl,
-              unit: stockItemForm.unit,
-              level: qty <= minLvl ? "kritik" : "normal",
-              levelLabel: qty <= minLvl ? "Kritik Seviye" : "Yeterli Seviye",
-            }
+            ...item,
+            name: stockItemForm.name.trim(),
+            category: stockItemForm.category,
+            categoryLabel: catLabel,
+            warehouse: stockItemForm.warehouse,
+            quantity: qty,
+            minLevel: minLvl,
+            unit: stockItemForm.unit,
+            level: qty <= minLvl ? "kritik" : "normal",
+            levelLabel: qty <= minLvl ? "Kritik Seviye" : "Yeterli Seviye",
+          }
           : item
       )
     );
@@ -653,13 +652,13 @@ export function StockView() {
       prev.map((wh) =>
         wh.id === selectedEditWarehouse.id
           ? {
-              ...wh,
-              name: warehouseForm.name.trim(),
-              capacity: cap,
-              currentAmount: cur,
-              unit: warehouseForm.unit,
-              value: pct,
-            }
+            ...wh,
+            name: warehouseForm.name.trim(),
+            capacity: cap,
+            currentAmount: cur,
+            unit: warehouseForm.unit,
+            value: pct,
+          }
           : wh
       )
     );
@@ -879,10 +878,10 @@ export function StockView() {
             pagination={
               meta?.pagination
                 ? {
-                    page: meta.pagination.page,
-                    totalPages: meta.pagination.totalPages,
-                    total: meta.pagination.total,
-                  }
+                  page: meta.pagination.page,
+                  totalPages: meta.pagination.totalPages,
+                  total: meta.pagination.total,
+                }
                 : undefined
             }
             onPageChange={setPage}
