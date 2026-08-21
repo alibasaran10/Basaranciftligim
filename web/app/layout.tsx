@@ -62,7 +62,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr" data-theme="light" suppressHydrationWarning>
+    <html lang="tr" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var saved = localStorage.getItem("entegre-theme");
+                  if (saved === "dark" || saved === "light") {
+                    document.documentElement.setAttribute("data-theme", saved);
+                  } else {
+                    var systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+                    document.documentElement.setAttribute("data-theme", systemDark ? "dark" : "light");
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

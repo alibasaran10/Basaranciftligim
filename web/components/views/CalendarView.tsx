@@ -1430,7 +1430,7 @@ export function CalendarView() {
                     onChange={(e) => setEventForm({ ...eventForm, type: e.target.value })}
                     style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
                   >
-                    <option value="doğum">🐮 Doğum</option>
+                    <option value="doğum">🐮 Doğum/Hayvan</option>
                     <option value="sulama">💧 Sulama Planı</option>
                     <option value="veteriner">🩺 Veteriner Muayenesi</option>
                     <option value="aşı">💉 Aşı & İlaçlama</option>
@@ -1452,7 +1452,7 @@ export function CalendarView() {
                     <option value="kritik">🔴 Kritik / Acil</option>
                     <option value="yüksek">🟠 Yüksek Öncelik</option>
                     <option value="normal">🟢 Normal Öncelik</option>
-                    <option value="düşük">⚪ Düşük Öncelik</option>
+                    <option value="düşük">🔵 Düşük Öncelik</option>
                   </select>
                 </div>
               </div>
@@ -1615,7 +1615,7 @@ export function CalendarView() {
                     onChange={(e) => setEventForm({ ...eventForm, type: e.target.value })}
                     style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--surface-2)", color: "inherit" }}
                   >
-                    <option value="doğum">🐮 Doğum</option>
+                    <option value="doğum">🐮 Doğum/Hayvan</option>
                     <option value="sulama">💧 Sulama Planı</option>
                     <option value="veteriner">🩺 Veteriner Muayenesi</option>
                     <option value="aşı">💉 Aşı & İlaçlama</option>
@@ -1637,7 +1637,7 @@ export function CalendarView() {
                     <option value="kritik">🔴 Kritik / Acil</option>
                     <option value="yüksek">🟠 Yüksek Öncelik</option>
                     <option value="normal">🟢 Normal Öncelik</option>
-                    <option value="düşük">⚪ Düşük Öncelik</option>
+                    <option value="düşük">🔵 Düşük Öncelik</option>
                   </select>
                 </div>
               </div>

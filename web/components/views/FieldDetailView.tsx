@@ -20,7 +20,7 @@ import { ErrorState, SkeletonBlock } from "@/components/ui/AsyncState";
 import { Badge } from "@/components/ui/Badge";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Panel } from "@/components/ui/Panel";
-import { formatDate, formatNumber, formatPercent, withUnit } from "@/lib/format";
+import { formatDate, formatNumber, formatPercent, withUnit, formatArea } from "@/lib/format";
 import type { FieldDetail } from "@/lib/types";
 import { useApi } from "@/lib/useApi";
 
@@ -90,7 +90,7 @@ export function FieldDetailView({ slug }: { slug: string }) {
               {[
                 [MapPin, "Tarla Adı", field.name],
                 [Sprout, "Toprak Tipi", field.soilType ?? "—"],
-                [Leaf, "Arazi Büyüklüğü", `${formatNumber(field.areaDonum)} Dönüm`],
+                [Leaf, "Arazi Büyüklüğü", formatArea(field.areaDonum)],
                 [Mountain, "Rakım", field.altitudeMeters ? `${formatNumber(field.altitudeMeters)} m` : "—"],
                 [Gauge, "Eğim", field.slopePercent != null ? `%${field.slopePercent}` : "—"],
                 [Droplets, "Sulama Durumu", field.irrigation?.method ?? "—"],

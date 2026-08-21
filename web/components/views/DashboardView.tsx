@@ -29,6 +29,7 @@ import {
   formatPercent,
   formatRelative,
   withUnit,
+  formatArea,
 } from "@/lib/format";
 import type { ActivityItem, DashboardOverview } from "@/lib/types";
 import { useApi } from "@/lib/useApi";
@@ -209,7 +210,7 @@ export function DashboardView() {
                   <span>
                     <strong>{field.name}</strong>
                     <small>
-                      {formatNumber(field.areaDonum)} Dönüm · {field.soilType}
+                      {formatArea(field.areaDonum)} · {field.soilType}
                     </small>
                   </span>
                   <b>{field.crop}</b>

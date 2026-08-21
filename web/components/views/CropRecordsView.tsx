@@ -19,6 +19,7 @@ import {
   formatNumber,
   formatPercent,
   trendOf,
+  formatArea,
 } from "@/lib/format";
 import type { CropRecordRow, CropSummary } from "@/lib/types";
 import { useApi } from "@/lib/useApi";
@@ -54,7 +55,7 @@ export function CropRecordsView() {
     ),
     record.crop,
     record.variety,
-    formatDecimal(record.areaDonum),
+    formatArea(record.areaDonum),
     formatDecimal(record.amount),
     record.unit,
     record.method,

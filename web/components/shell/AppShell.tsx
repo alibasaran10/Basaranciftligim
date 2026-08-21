@@ -57,7 +57,7 @@ const nav = [
   { label: "Alarmlar", href: "/alarmlar", icon: AlarmClock, badge: "alerts" },
   { label: "Takvim", href: "/takvim", icon: CalendarDays },
   { label: "Kameralar", href: "/kameralar", icon: Camera },
-  { label: "Raporlar", href: "/raporlar", icon: BarChart3 },
+  { label: "Evraklar", href: "/raporlar", icon: ClipboardList },
   { label: "Finansal", href: "/finans", icon: Coins },
   { label: "Kullanıcılar", href: "/kullanicilar", icon: Users },
   { label: "Ayarlar", href: "/ayarlar", icon: Settings },

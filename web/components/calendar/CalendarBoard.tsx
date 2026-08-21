@@ -1,6 +1,16 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Droplets,
+  HeartPulse,
+  Stethoscope,
+  Syringe,
+  Wheat,
+  Wrench,
+  StickyNote,
+} from "lucide-react";
 
 import { SkeletonBlock } from "@/components/ui/AsyncState";
 import type { CalendarMonth } from "@/lib/types";
@@ -29,6 +39,46 @@ export type CalendarEventItem = {
   description?: string;
   tone?: number | string;
 };
+
+/** Öncelik seviyesine göre renk sınıfı döndürür (Kritik=Kırmızı, Yüksek=Turuncu, Normal=Yeşil, Düşük=Mavi) */
+function getEventTone(evt: CalendarEventItem, index: number): string {
+  const p = (evt.priority || evt.status || "").toLowerCase();
+  if (p === "kritik" || p === "acil") return "event-tone-red";
+  if (p === "yüksek") return "event-tone-orange";
+  if (p === "normal") return "event-tone-green";
+  if (p === "düşük") return "event-tone-blue";
+  if (evt.tone !== undefined) return `event-tone-${evt.tone}`;
+
+  // Fallback if priority is missing
+  const type = (evt.type || evt.category || "").toLowerCase();
+  if (type.includes("doğum") || type.includes("hayvan") || type.includes("sağlık")) return "event-tone-purple";
+  if (type.includes("sulama")) return "event-tone-blue";
+  if (type.includes("hasat") || type.includes("gübre")) return "event-tone-orange";
+  if (type.includes("bakım") || type.includes("ekipman")) return "event-tone-blue";
+  return "event-tone-green";
+}
+function getEventTypeIcon(typeStr?: string) {
+  const t = (typeStr || "").toLowerCase();
+  if (t.includes("doğum") || t.includes("hayvan") || t.includes("sağlık")) {
+    return <span style={{ flexShrink: 0, fontSize: "12px", lineHeight: 1 }}>🐮</span>;
+  }
+  if (t.includes("sulama")) {
+    return <span style={{ flexShrink: 0, fontSize: "12px", lineHeight: 1 }}>💧</span>;
+  }
+  if (t.includes("veteriner") || t.includes("muayene")) {
+    return <span style={{ flexShrink: 0, fontSize: "12px", lineHeight: 1 }}>🩺</span>;
+  }
+  if (t.includes("aşı") || t.includes("ilaç")) {
+    return <span style={{ flexShrink: 0, fontSize: "12px", lineHeight: 1 }}>💉</span>;
+  }
+  if (t.includes("hasat") || t.includes("gübre") || t.includes("ekim") || t.includes("tarla")) {
+    return <span style={{ flexShrink: 0, fontSize: "12px", lineHeight: 1 }}>🌾</span>;
+  }
+  if (t.includes("bakım") || t.includes("ekipman")) {
+    return <span style={{ flexShrink: 0, fontSize: "12px", lineHeight: 1 }}>🔧</span>;
+  }
+  return <span style={{ flexShrink: 0, fontSize: "12px", lineHeight: 1 }}>📋</span>;
+}
 
 export function CalendarBoard({
   month,
@@ -60,18 +110,6 @@ export function CalendarBoard({
   const cellCount = Math.ceil((offset + daysInMonth) / 7) * 7;
 
   const isCurrentMonth = today.getFullYear() === year && today.getMonth() + 1 === monthNumber;
-
-  // Function to determine tone class based on event type or priority
-  const getEventTone = (evt: CalendarEventItem, index: number): string => {
-    if (evt.tone !== undefined) return `event-tone-${evt.tone}`;
-    if (evt.priority === "kritik" || evt.status === "kritik") return "event-tone-red";
-    const type = (evt.type || evt.category || "").toLowerCase();
-    if (type.includes("doğum") || type.includes("veteriner") || type.includes("aşı") || type.includes("sağlık")) return "event-tone-3"; // Purple
-    if (type.includes("sulama")) return "event-tone-1"; // Blue
-    if (type.includes("hasat") || type.includes("gübre")) return "event-tone-2"; // Orange / Yellow
-    if (type.includes("bakım") || type.includes("ekipman")) return "event-tone-1";
-    return `event-tone-${index % 4}`;
-  };
 
   return (
     <div className="calendar-board">
@@ -151,17 +189,20 @@ export function CalendarBoard({
                       e.stopPropagation();
                       onEventClick?.(evt);
                     }}
-                    title={`${evt.title} (${evt.assignedPerson || "Sorumlu Atanmadı"})`}
-                    style={{ cursor: "pointer", display: "block" }}
+                    title={`${evt.title} (${evt.assignedPerson || "Sorumlu Atanmadı"}) - Öncelik: ${(evt.priority || "normal").toUpperCase()}`}
+                    style={{ cursor: "pointer" }}
                   >
-                    {evt.time ? `${evt.time} ` : ""}{evt.title}
+                    {getEventTypeIcon(evt.type || evt.category)}
+                    <span>
+                      {evt.time ? `${evt.time} ` : ""}{evt.title}
+                    </span>
                   </span>
                 ))}
 
                 {/* Fallback events if no structured events exist */}
                 {dayEvents.length === 0 && fallbackEvents.slice(0, 3).map((eventStr, eventIndex) => (
                   <span
-                    className={`event-tone-${eventIndex % 4}`}
+                    className="event-tone-green"
                     key={`${eventStr}-${eventIndex}`}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -172,9 +213,12 @@ export function CalendarBoard({
                         type: "diğer",
                       });
                     }}
-                    style={{ cursor: "pointer", display: "block" }}
+                    style={{ cursor: "pointer" }}
                   >
-                    {eventStr}
+                    {getEventTypeIcon(eventStr)}
+                    <span>
+                      {eventStr}
+                    </span>
                   </span>
                 ))}
               </div>

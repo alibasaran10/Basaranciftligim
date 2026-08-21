@@ -27,6 +27,22 @@ export function formatCurrency(value: number | null | undefined) {
   return `₺ ${formatNumber(Math.round(Number(value ?? 0)))}`;
 }
 
+/**
+ * Tarla alanını akıllı biçimlendirir:
+ * - Çift haneli dönüm (>= 10) ise dönüm cinsinden (Örn: 10,2 Dönüm)
+ * - Tek haneli dönüm (< 10) ise m² cinsinden (Örn: 8.500 m²)
+ */
+export function formatArea(value: number | null | undefined): string {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return "0 m²";
+  const donum = Number(value);
+  if (donum >= 10) {
+    const text = Number.isInteger(donum) ? formatNumber(donum) : formatDecimal(donum);
+    return `${text} Dönüm`;
+  }
+  const m2 = Math.round(donum * 1000);
+  return `${formatNumber(m2)} m²`;
+}
+
 /** 12.5 -> "%12,5" (isaret istege bagli) */
 export function formatPercent(value: number | null | undefined, withSign = false) {
   const num = Number(value ?? 0);

@@ -42,6 +42,15 @@ type WarehouseItem = {
   value: number; // doluluk %
 };
 
+const ALL_DEFAULT_CATEGORIES = [
+  { value: "kaba_yem", label: "Kaba Yem" },
+  { value: "silaj", label: "Silaj" },
+  { value: "tahil", label: "Tahıl" },
+  { value: "gubre", label: "Gübre & İlaç" },
+  { value: "yakit", label: "Yakıt & Enerji" },
+  { value: "diger", label: "Diğer" },
+];
+
 function getCategoryLabel(catKey: string): string {
   switch (catKey) {
     case "kaba_yem":
@@ -179,10 +188,14 @@ export function StockView() {
   const [warehouses, setWarehouses] = useState<WarehouseItem[]>(INITIAL_WAREHOUSES);
   const [movementsList, setMovementsList] = useState<StockMovementRow[]>([]);
 
-  // Update local state when API responds
+  // Update local state when API responds (Merge with existing items so categories/items aren't lost on filter)
   useEffect(() => {
     if (apiItems && apiItems.length > 0) {
-      setStockItems(apiItems);
+      setStockItems((prev) => {
+        const map = new Map(prev.map((item) => [item.id, item]));
+        apiItems.forEach((item) => map.set(item.id, item));
+        return Array.from(map.values());
+      });
     }
   }, [apiItems]);
 
@@ -675,11 +688,16 @@ export function StockView() {
     });
   }, [stockItems, search, filters]);
 
-  // Filter Options for Select Inputs
+  // Filter Options for Select Inputs (Tüm kategoriler her zaman listelenir)
   const categoryOptions = useMemo(() => {
-    return Array.from(new Map(stockItems.map((i) => [i.category, i.categoryLabel])).entries()).map(
-      ([value, label]) => ({ value, label })
-    );
+    const map = new Map<string, string>();
+    ALL_DEFAULT_CATEGORIES.forEach((c) => map.set(c.value, c.label));
+    stockItems.forEach((i) => {
+      if (i.category && i.categoryLabel) {
+        map.set(i.category, i.categoryLabel);
+      }
+    });
+    return Array.from(map.entries()).map(([value, label]) => ({ value, label }));
   }, [stockItems]);
 
   const warehouseOptions = useMemo(() => {
