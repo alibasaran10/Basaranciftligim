@@ -22,7 +22,7 @@ import { SectionHeading } from "@/components/shared/SectionHeading";
 export const metadata: Metadata = {
   title: "Özellikler",
   description:
-    "Tarla, sürü, stok, alarm, kamera ve bulut yönetimi için SÜRÜM özelliklerini keşfedin.",
+    "Tarla, sürü, stok, alarm, kamera ve bulut yönetimi için Basaranciftligim özelliklerini keşfedin.",
 };
 
 const ecosystem = [
@@ -57,7 +57,7 @@ export default function FeaturesPage() {
           <div className="page-hero-image">
             <Image
               src="/images/features-devices.png"
-              alt="SÜRÜM özellik ekranları"
+              alt="Basaranciftligim özellik ekranları"
               fill
               priority
               unoptimized
@@ -134,7 +134,7 @@ export default function FeaturesPage() {
         <SectionHeading
           eyebrow="Mevcut altyapınızla uyumlu"
           title="Donanımınızı Değiştirmeden Dijitalleşin"
-          description="SÜRÜM, sahadaki mevcut cihazlarınızla birlikte çalışacak şekilde tasarlandı."
+          description="Basaranciftligim, sahadaki mevcut cihazlarınızla birlikte çalışacak şekilde tasarlandı."
         />
         <div className="ecosystem-grid">
           {ecosystem.map(([Icon, title, text], index) => (

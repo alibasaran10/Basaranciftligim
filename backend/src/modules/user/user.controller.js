@@ -38,6 +38,7 @@ function present(user) {
     jobTitle: user.jobTitle ?? null,
     accessScope: user.accessScope || 'Tüm işletme',
     phone: user.phone ?? null,
+    gender: user.gender ?? 'erkek',
     birthDate: user.birthDate ?? null,
     avatarUrl: user.avatarUrl ?? null,
     status: user.status ?? USER_STATUS.ACTIVE,

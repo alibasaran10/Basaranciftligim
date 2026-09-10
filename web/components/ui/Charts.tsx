@@ -81,9 +81,9 @@ export function TrendChart({
               boxShadow: "0 10px 25px rgba(0,0,0,0.25)",
             }}
             labelStyle={{ color: "var(--text)", fontWeight: 700, marginBottom: "4px" }}
-            formatter={(val: unknown, name: string) => [
+            formatter={(val: unknown, name?: string | number) => [
               compactNumber.format(typeof val === "number" ? val : 0),
-              name === "value" ? primaryName : name === "secondary" ? secondaryName : name,
+              name === "value" ? primaryName : name === "secondary" ? secondaryName : String(name ?? ""),
             ]}
           />
           <Area

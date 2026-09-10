@@ -48,12 +48,22 @@ function Hydrator() {
    * /auth/me ile dogrula. Token gecersizse oturum dusurulur.
    */
   useEffect(() => {
-    const cached = tokenStore.user();
-    dispatch(hydrateSession({ user: cached }));
+    const handleAuthLogout = () => {
+      dispatch(logout());
+    };
+    window.addEventListener("auth:logout", handleAuthLogout);
 
+    const cached = tokenStore.user();
     if (!tokenStore.access()) {
       dispatch(hydrateSession({ user: null }));
-      return;
+    } else {
+      dispatch(hydrateSession({ user: cached }));
+    }
+
+    if (!tokenStore.access()) {
+      return () => {
+        window.removeEventListener("auth:logout", handleAuthLogout);
+      };
     }
 
     let active = true;
@@ -81,6 +91,7 @@ function Hydrator() {
 
     return () => {
       active = false;
+      window.removeEventListener("auth:logout", handleAuthLogout);
     };
   }, [dispatch]);
 

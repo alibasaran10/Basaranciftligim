@@ -20,10 +20,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://surum-site.pages.dev"),
+  metadataBase: new URL("https://basaranciftligim.com"),
   title: {
-    default: "SÜRÜM | Akıllı Çiftlik Yönetim Sistemi",
-    template: "%s | SÜRÜM",
+    default: "Basaranciftligim | Yenilikçi Çiftlik Yönetim Sistemi",
+    template: "%s | Basaranciftligim",
   },
   description:
     "Sürü, tarla, mahsul, stok ve kamera yönetimini tek platformda buluşturan akıllı çiftlik yönetim sistemi.",
@@ -34,8 +34,8 @@ export const metadata: Metadata = {
   openGraph: {
     locale: "tr_TR",
     type: "website",
-    siteName: "SÜRÜM",
-    title: "SÜRÜM | Akıllı Çiftlik Yönetim Sistemi",
+    siteName: "Basaranciftligim",
+    title: "Basaranciftligim | Yenilikçi Çiftlik Yönetim Sistemi",
     description:
       "Çiftliğinizin tüm süreçlerini akıllı tasma, kamera ve bulut teknolojileriyle tek platformdan yönetin.",
     images: [
@@ -43,13 +43,13 @@ export const metadata: Metadata = {
         url: "/og-surum.png",
         width: 1200,
         height: 630,
-        alt: "SÜRÜM Akıllı Çiftlik Yönetim Sistemi",
+        alt: "Basaranciftligim Yenilikçi Çiftlik Yönetim Sistemi",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "SÜRÜM | Akıllı Çiftlik Yönetim Sistemi",
+    title: "Basaranciftligim | Yenilikçi Çiftlik Yönetim Sistemi",
     description: "Çiftliğinizin geleceği, verinizde.",
     images: ["/og-surum.png"],
   },
@@ -61,7 +61,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr" data-theme="light" suppressHydrationWarning>
+    <html lang="tr" data-theme="dark" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <AppProviders>
           <SiteHeader />

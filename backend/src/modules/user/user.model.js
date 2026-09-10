@@ -29,6 +29,7 @@ const userSchema = new Schema(
     // Erisim alani ozeti: "Tüm işletme", "Tarla ve Stok", "Sürü ve Takvim".
     accessScope: { type: String, trim: true, maxlength: 160 },
     avatarUrl: { type: String, trim: true, maxlength: 300 },
+    gender: { type: String, enum: ['erkek', 'kadin'], default: 'erkek' },
     status: {
       type: String,
       enum: Object.values(USER_STATUS),

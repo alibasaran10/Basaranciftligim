@@ -27,7 +27,7 @@ export default function HomePage() {
         <div className="hero-grid-pattern" />
         <div className="container hero-grid">
           <div className="hero-copy hero-copy--animated">
-            <span className="eyebrow">SÜRÜM Akıllı Çiftlik Yönetim Sistemi</span>
+            <span className="eyebrow">Basaranciftligim Yenilikçi Çiftlik Yönetim Sistemi</span>
             <h1>
               Sürünüzü, Tarlalarınızı ve Verilerinizi{" "}
               <span>Tek Platformda Yönetin</span>
@@ -54,7 +54,7 @@ export default function HomePage() {
             <div className="hero-orbit hero-orbit--two" />
             <Image
               src="/images/hero-devices.png"
-              alt="SÜRÜM mobil ve web uygulamaları"
+              alt="Basaranciftligim mobil ve web uygulamaları"
               fill
               priority
               unoptimized

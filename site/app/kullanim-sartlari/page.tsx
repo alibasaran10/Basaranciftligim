@@ -5,7 +5,7 @@ export default function TermsPage() {
     <LegalPage title="Kullanım Şartları">
       <h2>Hizmet kapsamı</h2>
       <p>
-        SÜRÜM; çiftlik kayıtlarının, sensör verilerinin ve operasyon süreçlerinin
+        Basaranciftligim; çiftlik kayıtlarının, sensör verilerinin ve operasyon süreçlerinin
         dijital olarak yönetilmesini sağlayan bir yazılım hizmetidir.
       </p>
       <h2>Kullanıcı sorumluluğu</h2>

@@ -219,6 +219,30 @@ async function seedFarmAndUsers() {
 
   const team = await User.create([
     {
+      name: 'Dr. Selin Kaya',
+      email: 'veteriner@basaranciftligim.com',
+      password: 'Parola00',
+      role: ROLES.FARMER,
+      farm: farm._id,
+      phone: '+90 555 333 90 25',
+      jobTitle: 'Veteriner Hekim',
+      accessScope: 'Sürü, Sağlık ve Takvim',
+      status: USER_STATUS.ACTIVE,
+      lastLoginAt: daysFromNow(-1, 18, 5),
+    },
+    {
+      name: 'Ayşe Yılmaz',
+      email: 'veteriner@basaranciftligi.com',
+      password: 'Parola00',
+      role: ROLES.FARMER,
+      farm: farm._id,
+      phone: '+90 555 333 90 24',
+      jobTitle: 'Veteriner Hekim',
+      accessScope: 'Sürü ve Takvim',
+      status: USER_STATUS.ACTIVE,
+      lastLoginAt: daysFromNow(-1, 18, 5),
+    },
+    {
       name: 'Hasan Demir',
       email: 'hasan@basaranciftligi.com',
       password: 'Parola00',

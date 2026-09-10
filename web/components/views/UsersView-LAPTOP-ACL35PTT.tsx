@@ -256,10 +256,10 @@ export function UsersView() {
           loading={loading}
           headers={["Ad Soyad", "E-posta", "Rol", "Erişim Alanı", "Durum"]}
           rows={rows}
-          onViewRow={(index) => {
+          onViewRow={(index: number) => {
             if (users && users[index]) setSelectedViewUser(users[index]);
           }}
-          onEditRow={(index) => {
+          onEditRow={(index: number) => {
             if (users && users[index]) openEditModal(users[index]);
           }}
           pagination={

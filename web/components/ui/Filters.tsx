@@ -17,6 +17,8 @@ export function Filters({
   search = "",
   onSearchChange,
   onSelectChange,
+  onFilterToggle,
+  isFilterActive,
   showExtraActionButtons = false,
 }: {
   placeholder?: string;
@@ -24,6 +26,8 @@ export function Filters({
   search?: string;
   onSearchChange?: (value: string) => void;
   onSelectChange?: (name: string, value: string) => void;
+  onFilterToggle?: () => void;
+  isFilterActive?: boolean;
   showExtraActionButtons?: boolean;
 }) {
   return (

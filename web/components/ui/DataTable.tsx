@@ -40,7 +40,9 @@ export function DataTable({
   pagination,
   onPageChange,
   onView,
+  onViewRow,
   onEdit,
+  onEditRow,
   onDelete,
   onHeaderFilterClick,
   emptyMessage = "Kayıt bulunamadı.",
@@ -52,11 +54,15 @@ export function DataTable({
   pagination?: Pagination;
   onPageChange?: (page: number) => void;
   onView?: (index: number) => void;
+  onViewRow?: (index: number) => void;
   onEdit?: (index: number) => void;
+  onEditRow?: (index: number) => void;
   onDelete?: (index: number) => void;
   onHeaderFilterClick?: (headerName: string) => void;
   emptyMessage?: string;
 }) {
+  const handleView = onView || onViewRow;
+  const handleEdit = onEdit || onEditRow;
   const dispatch = useAppDispatch();
 
   const page = pagination?.page ?? 1;
@@ -149,7 +155,7 @@ export function DataTable({
                   <button
                     aria-label="Görüntüle"
                     onClick={() => {
-                      if (onView) onView(rowIndex);
+                      if (handleView) handleView(rowIndex);
                       else dispatch(showToast("Kayıt görüntüleniyor."));
                     }}
                   >
@@ -158,7 +164,7 @@ export function DataTable({
                   <button
                     aria-label="Düzenle"
                     onClick={() => {
-                      if (onEdit) onEdit(rowIndex);
+                      if (handleEdit) handleEdit(rowIndex);
                       else dispatch(showToast("Düzenleme modu açıldı."));
                     }}
                   >

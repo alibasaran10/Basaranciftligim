@@ -15,13 +15,13 @@ import { SectionHeading } from "@/components/shared/SectionHeading";
 export const metadata: Metadata = {
   title: "İletişim",
   description:
-    "SÜRÜM demo talebi, satış ve teknik destek için ekibimizle iletişime geçin.",
+    "Basaranciftligim demo talebi, satış ve teknik destek için ekibimizle iletişime geçin.",
 };
 
 const contactCards = [
   [Phone, "Satış & Demo", "+90 850 255 00 55", "Hafta içi 09.00 – 18.00"],
-  [Mail, "E-posta", "info@surum.com", "Bir iş günü içinde yanıt"],
-  [Headphones, "Teknik Destek", "destek@surum.com", "7/24 kritik olay desteği"],
+  [Mail, "E-posta", "info@basaranciftligim.com", "Bir iş günü içinde yanıt"],
+  [Headphones, "Teknik Destek", "destek@basaranciftligim.com", "7/24 kritik olay desteği"],
   [MapPin, "Merkez Ofis", "Konya / Türkiye", "Teknoloji Geliştirme Bölgesi"],
 ] as const;
 

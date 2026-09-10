@@ -223,7 +223,7 @@ export type AnimalDetail = {
   healthRecords: Array<{ _id: string; type: string; title: string; date: string; performedBy?: string }>;
   timeline: Array<{ key: string; label: string; date: string | null; done: boolean }>;
   milkSeries: SeriesPoint[];
-  /** Zamana bağlı etiketler sunucuda hesaplanır (render saf kalsın diye). */
+  offspring?: Array<{ _id: string; earTag: string; breed?: string; gender?: string; birthDate?: string; status?: string }>;
   derived: {
     ageLabel: string;
     healthLabel: string;
@@ -455,6 +455,7 @@ export type FinanceTransactionRow = {
   status: string;
   statusLabel: string;
   dueDate: string | null;
+  notes?: string | null;
 };
 
 export type FinanceSummary = {

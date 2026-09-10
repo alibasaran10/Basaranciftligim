@@ -233,10 +233,10 @@ export function FieldsView() {
             pagination={
               meta?.pagination
                 ? {
-                    page: meta.pagination.page,
-                    totalPages: meta.pagination.totalPages,
-                    total: meta.pagination.total,
-                  }
+                  page: meta.pagination.page,
+                  totalPages: meta.pagination.totalPages,
+                  total: meta.pagination.total,
+                }
                 : undefined
             }
             onPageChange={setPage}

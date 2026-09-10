@@ -29,6 +29,8 @@ export function LoginScreen() {
   const router = useRouter();
   const authenticated = useAppSelector((state) => state.session.authenticated);
 
+  const [email, setEmail] = useState("info@basaranciftligi.com");
+  const [password, setPassword] = useState("Parola00");
   const [showPassword, setShowPassword] = useState(false);
   const [remembered, setRemembered] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -41,15 +43,11 @@ export function LoginScreen() {
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const values = new FormData(event.currentTarget);
-    const email = String(values.get("email") || "").trim();
-    const password = String(values.get("password") || "");
-
     setLoading(true);
     setError(null);
 
     try {
-      const user = await api.login(email, password);
+      const user = await api.login(email.trim(), password);
       dispatch(login({ user, remembered }));
       router.push("/dashboard");
     } catch (err) {
@@ -58,6 +56,12 @@ export function LoginScreen() {
       );
       setLoading(false);
     }
+  };
+
+  const setDemoAccount = (demoEmail: string) => {
+    setEmail(demoEmail);
+    setPassword("Parola00");
+    setError(null);
   };
 
   return (
@@ -126,6 +130,43 @@ export function LoginScreen() {
           </div>
           <h2>Hoş Geldiniz!</h2>
           <p>Hesabınıza giriş yaparak sisteme devam edin.</p>
+
+          <div style={{ marginBottom: "1.25rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            <span style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 600 }}>Hızlı Demo Hesap Seçimi:</span>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+              {[
+                { label: "👑 Yönetici", demoEmail: "info@basaranciftligi.com" },
+                { label: "🩺 Veteriner", demoEmail: "veteriner@basaranciftligim.com" },
+                { label: "🌾 Ziraat Sorumlusu", demoEmail: "hasan@basaranciftligi.com" },
+              ].map(({ label, demoEmail }) => {
+                const isSelected = email === demoEmail;
+                return (
+                  <button
+                    key={demoEmail}
+                    type="button"
+                    onClick={() => setDemoAccount(demoEmail)}
+                    style={{
+                      padding: "0.4rem 0.75rem",
+                      fontSize: "0.8rem",
+                      borderRadius: "0.5rem",
+                      border: isSelected ? "1px solid var(--green-600)" : "1px solid var(--line)",
+                      background: isSelected ? "var(--surface-3)" : "var(--surface-2)",
+                      color: isSelected ? "var(--text)" : "var(--muted)",
+                      cursor: "pointer",
+                      fontWeight: isSelected ? 600 : 500,
+                      transition: "all 0.2s ease",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "0.35rem",
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <form onSubmit={submit}>
             <label>
               E-posta Adresi
@@ -136,7 +177,8 @@ export function LoginScreen() {
                   type="email"
                   required
                   autoComplete="username"
-                  defaultValue="info@basaranciftligi.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="ornek@mail.com"
                 />
               </span>
@@ -150,7 +192,8 @@ export function LoginScreen() {
                   type={showPassword ? "text" : "password"}
                   required
                   autoComplete="current-password"
-                  defaultValue="Parola00"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="Şifrenizi giriniz"
                 />
                 <button

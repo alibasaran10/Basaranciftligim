@@ -12,7 +12,7 @@ import { SectionHeading } from "@/components/shared/SectionHeading";
 export const metadata: Metadata = {
   title: "Referanslar",
   description:
-    "SÜRÜM ile verimini artıran çiftçilerin ve büyüyen işletmelerin başarı hikâyeleri.",
+    "Basaranciftligim ile verimini artıran çiftçilerin ve büyüyen işletmelerin başarı hikâyeleri.",
 };
 
 const referenceStats = [
@@ -51,7 +51,7 @@ export default function ReferencesPage() {
           <div className="reference-farmer">
             <Image
               src="/images/farmer-hero.png"
-              alt="SÜRÜM kullanıcısı çiftçi"
+              alt="Basaranciftligim kullanıcısı çiftçi"
               fill
               unoptimized
             />

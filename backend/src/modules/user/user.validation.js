@@ -35,6 +35,7 @@ export const updateUserSchema = z
     status: z.nativeEnum(USER_STATUS).optional(),
     birthDate: isoDate.optional(),
     avatarUrl: z.string().trim().max(300).optional(),
+    gender: z.enum(['erkek', 'kadin']).optional(),
   })
   .strict();
 
@@ -46,6 +47,7 @@ export const updateProfileSchema = z
     jobTitle: z.string().trim().max(120).optional(),
     birthDate: isoDate.optional(),
     avatarUrl: z.string().trim().max(300).optional(),
+    gender: z.enum(['erkek', 'kadin']).optional(),
   })
   .strict();
 

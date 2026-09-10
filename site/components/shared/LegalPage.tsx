@@ -9,7 +9,7 @@ export function LegalPage({
     <main className="legal-page">
       <section className="simple-hero">
         <div className="container">
-          <span className="eyebrow">SÜRÜM yasal bilgiler</span>
+          <span className="eyebrow">Basaranciftligim yasal bilgiler</span>
           <h1>{title}</h1>
           <p>Son güncelleme: 24 Temmuz 2026</p>
         </div>

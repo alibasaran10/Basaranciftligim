@@ -24,7 +24,7 @@ const questions = [
   {
     question: "Kaç hayvana kadar kullanılabilir?",
     answer:
-      "SÜRÜM modüler ve ölçeklenebilir yapıdadır; küçük aile işletmelerinden binlerce hayvanlı tesislere kadar büyüyebilir.",
+      "Basaranciftligim modüler ve ölçeklenebilir yapıdadır; küçük aile işletmelerinden binlerce hayvanlı tesislere kadar büyüyebilir.",
   },
   {
     question: "Mobil uygulama hangi cihazlarda çalışır?",

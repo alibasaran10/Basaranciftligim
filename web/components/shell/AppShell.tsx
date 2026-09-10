@@ -7,12 +7,14 @@ import {
   Bell,
   CalendarDays,
   Camera,
+  Check,
   ChevronDown,
   CircleHelp,
   ClipboardList,
   Coins,
   LayoutDashboard,
   Leaf,
+  Lock,
   LogOut,
   Menu,
   Moon,
@@ -21,6 +23,7 @@ import {
   Plus,
   Search,
   Settings,
+  ShieldAlert,
   Sprout,
   Sun,
   Users,
@@ -29,13 +32,13 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { api } from "@/lib/api";
+import { api, SITE_BASE_URL, type ApiUser } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import { useApi } from "@/lib/useApi";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { logout } from "@/store/slices/sessionSlice";
+import { login, logout } from "@/store/slices/sessionSlice";
 import { toggleTheme } from "@/store/slices/themeSlice";
 import {
   clearToast,
@@ -58,16 +61,360 @@ const nav = [
   { label: "Takvim", href: "/takvim", icon: CalendarDays },
   { label: "Kameralar", href: "/kameralar", icon: Camera },
   { label: "Evraklar", href: "/raporlar", icon: ClipboardList },
-  { label: "Finansal", href: "/finans", icon: Coins },
-  { label: "Kullanıcılar", href: "/kullanicilar", icon: Users },
+  { label: "Finansal", href: "/finans", icon: Coins, adminOnly: true },
+  { label: "Kullanıcılar", href: "/kullanicilar", icon: Users, adminOnly: true },
   { label: "Ayarlar", href: "/ayarlar", icon: Settings },
 ] as const;
+
+function isNavItemAllowed(href: string, user: ApiUser | null) {
+  if (!user) return true;
+  const role = user.role;
+  const job = user.jobTitle ?? "";
+
+  // Admin (İşletme Yöneticisi) tüm menülere tam erişebilir
+  if (role === "admin") return true;
+
+  // Finansal ve Kullanıcılar Yönetimi sadece Yönetici (Admin) için
+  if (href === "/finans" || href === "/kullanicilar") {
+    return false;
+  }
+
+  // Veteriner Hekim: Mahsul/Stok, Kameralar, Evraklar (Raporlar), Tarla erişimi yok
+  if (job === "Veteriner Hekim") {
+    if (
+      href === "/stok" ||
+      href === "/kameralar" ||
+      href === "/raporlar" ||
+      href === "/tarlalar" ||
+      href.startsWith("/ekim-hasat")
+    ) {
+      return false;
+    }
+  }
+
+  // Ziraat Sorumlusu / Mühendisi: Sürü, Kameralar, Evraklar (Raporlar) erişimi yok
+  if (job === "Ziraat Sorumlusu" || job === "Ziraat Mühendisi") {
+    if (
+      href === "/suru" ||
+      href === "/kameralar" ||
+      href === "/raporlar"
+    ) {
+      return false;
+    }
+  }
+
+  // Operatör: Sadece izleme ve kamera/alarm (Sürü, Tarla, Stok, Raporlar gizli)
+  if (role === "viewer" || job === "Operatör") {
+    if (
+      href === "/suru" ||
+      href === "/tarlalar" ||
+      href.startsWith("/ekim-hasat") ||
+      href === "/stok" ||
+      href === "/raporlar"
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
 
 type AlertSummary = { totals: { pendingAction: number } };
 type FarmSettings = {
   business: { name: string };
   subscription: { plan: string; renewalAt: string | null };
 };
+
+const DEMO_PROFILES = [
+  {
+    name: "Ali Başaran",
+    email: "info@basaranciftligi.com",
+    roleLabel: "👑 İşletme Yöneticisi (Admin)",
+    jobTitle: "İşletme Yöneticisi",
+  },
+  {
+    name: "Dr. Selin Kaya",
+    email: "veteriner@basaranciftligim.com",
+    roleLabel: "🩺 Veteriner Hekim",
+    jobTitle: "Veteriner Hekim",
+  },
+  {
+    name: "Hasan Demir",
+    email: "hasan@basaranciftligi.com",
+    roleLabel: "🌾 Ziraat Sorumlusu",
+    jobTitle: "Ziraat Sorumlusu",
+  },
+  {
+    name: "Ali Yıldız",
+    email: "ali@basaranciftligi.com",
+    roleLabel: "📹 Operatör",
+    jobTitle: "Operatör",
+  },
+];
+
+function UserProfileSection({
+  collapsed,
+  variant = "sidebar",
+}: {
+  collapsed?: boolean;
+  variant?: "sidebar" | "topbar";
+}) {
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const currentUser = useAppSelector((state) => state.session.user);
+  const [open, setOpen] = useState(false);
+  const [switching, setSwitching] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSwitchAccount = async (targetEmail: string) => {
+    if (currentUser?.email === targetEmail) {
+      setOpen(false);
+      return;
+    }
+    setSwitching(true);
+    try {
+      const user = await api.login(targetEmail, "Parola00");
+      dispatch(login({ user, remembered: true }));
+      dispatch(showToast(`${user.name} (${user.jobTitle || user.role}) hesabına geçiş yapıldı.`));
+      setOpen(false);
+    } catch {
+      dispatch(showToast("Hesap değiştirilemedi."));
+    } finally {
+      setSwitching(false);
+    }
+  };
+
+  const avatar =
+    currentUser?.avatarUrl ||
+    (currentUser?.gender === "kadin"
+      ? "/assets/profile_farmer_female.png"
+      : "/assets/profile_farmer.png");
+
+  if (variant === "topbar") {
+    return (
+      <div ref={containerRef} style={{ position: "relative" }}>
+        {open && (
+          <div
+            style={{
+              position: "absolute",
+              top: "100%",
+              right: 0,
+              marginTop: "8px",
+              minWidth: "240px",
+              background: "var(--surface)",
+              border: "1px solid var(--line-strong)",
+              borderRadius: "14px",
+              padding: "10px",
+              boxShadow: "0 15px 35px rgba(0, 0, 0, 0.4)",
+              zIndex: 100,
+            }}
+          >
+            <div
+              style={{
+                fontSize: "11px",
+                fontWeight: 700,
+                color: "var(--muted)",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                paddingBottom: "8px",
+                marginBottom: "6px",
+                borderBottom: "1px solid var(--line)",
+              }}
+            >
+              Profiller Arası Geçiş
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              {DEMO_PROFILES.map((p) => {
+                const active = currentUser?.email === p.email;
+                return (
+                  <button
+                    key={p.email}
+                    type="button"
+                    disabled={switching}
+                    onClick={() => handleSwitchAccount(p.email)}
+                    className={`profile-switch-item ${active ? "is-active" : ""}`}
+                    style={{
+                      border: active ? "1px solid var(--green-600)" : "1px solid transparent",
+                      background: active ? "rgba(22, 131, 70, 0.16)" : "transparent",
+                    }}
+                  >
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                      <span style={{ fontSize: "12.5px", fontWeight: active ? 700 : 600, color: "var(--text)" }}>
+                        {p.name}
+                      </span>
+                      <small style={{ fontSize: "11px", color: "var(--muted)" }}>{p.roleLabel}</small>
+                    </div>
+                    {active && <Check size={16} style={{ color: "var(--green-600)" }} />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <div style={{ display: "flex", alignItems: "center", gap: "2px" }}>
+          <div
+            className="topbar-user sidebar-user-info"
+            onClick={() => router.push("/ayarlar")}
+            style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "10px" }}
+            title="Ayarlar Sayfasına Git"
+          >
+            <div className="topbar-avatar-wrap">
+              <Image src={avatar} alt="" width={38} height={38} unoptimized />
+            </div>
+            <span>
+              <strong>{currentUser?.name ?? "—"}</strong>
+              <small>{currentUser?.jobTitle ?? "Kullanıcı"}</small>
+            </span>
+          </div>
+          <button
+            type="button"
+            className="profile-switch-btn"
+            aria-label="Profil Değiştir"
+            onClick={() => setOpen((v) => !v)}
+            style={{
+              background: open ? "var(--line)" : "transparent",
+            }}
+            title="Profiller Arası Geçiş Yap"
+          >
+            <ChevronDown size={14} style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 200ms ease" }} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={containerRef} style={{ position: "relative", marginTop: "4px" }}>
+      {open && !collapsed && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: "100%",
+            left: 0,
+            right: 0,
+            marginBottom: "8px",
+            background: "var(--surface)",
+            border: "1px solid var(--line-strong)",
+            borderRadius: "14px",
+            padding: "10px",
+            boxShadow: "0 15px 35px rgba(0, 0, 0, 0.4)",
+            zIndex: 100,
+          }}
+        >
+          <div
+            style={{
+              fontSize: "11px",
+              fontWeight: 700,
+              color: "var(--muted)",
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+              paddingBottom: "8px",
+              marginBottom: "6px",
+              borderBottom: "1px solid var(--line)",
+            }}
+          >
+            Profiller Arası Geçiş
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+            {DEMO_PROFILES.map((p) => {
+              const active = currentUser?.email === p.email;
+              return (
+                <button
+                  key={p.email}
+                  type="button"
+                  disabled={switching}
+                  onClick={() => handleSwitchAccount(p.email)}
+                  className={`profile-switch-item ${active ? "is-active" : ""}`}
+                  style={{
+                    border: active ? "1px solid var(--green-600)" : "1px solid transparent",
+                    background: active ? "rgba(22, 131, 70, 0.16)" : "transparent",
+                  }}
+                >
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    <span style={{ fontSize: "12.5px", fontWeight: active ? 700 : 600, color: "var(--text)" }}>
+                      {p.name}
+                    </span>
+                    <small style={{ fontSize: "11px", color: "var(--muted)" }}>{p.roleLabel}</small>
+                  </div>
+                  {active && <Check size={16} style={{ color: "var(--green-600)" }} />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div
+        className="sidebar-user"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "9px",
+          padding: "8px 9px",
+          border: "1px solid rgba(255, 255, 255, 0.14)",
+          borderRadius: "10px",
+        }}
+      >
+        <div
+          className="sidebar-user-info"
+          onClick={() => {
+            dispatch(setMobileMenu(false));
+            router.push("/ayarlar");
+          }}
+          title="Ayarlar Sayfasına Git"
+        >
+          <Image
+            src={avatar}
+            alt={currentUser?.name ?? ""}
+            width={42}
+            height={42}
+            unoptimized
+            style={{ borderRadius: "50%", objectFit: "cover" }}
+          />
+          {!collapsed && (
+            <span style={{ display: "grid", minWidth: 0, flex: 1 }}>
+              <strong style={{ fontSize: "13px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {currentUser?.name ?? "—"}
+              </strong>
+              <small style={{ fontSize: "11.5px", opacity: 0.7, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {currentUser?.jobTitle ?? "Kullanıcı"}
+              </small>
+            </span>
+          )}
+        </div>
+
+        {!collapsed && (
+          <button
+            type="button"
+            className="profile-switch-btn"
+            aria-label="Profil Değiştir"
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpen((v) => !v);
+            }}
+            style={{
+              background: open ? "rgba(255, 255, 255, 0.18)" : "transparent",
+            }}
+            title="Profiller Arası Geçiş Yap"
+          >
+            <ChevronDown size={16} style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 200ms ease" }} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function Sidebar({
   openAlerts,
@@ -82,6 +429,8 @@ function Sidebar({
   const collapsed = useAppSelector((state) => state.ui.sidebarCollapsed);
   const mobileOpen = useAppSelector((state) => state.ui.mobileMenuOpen);
   const user = useAppSelector((state) => state.session.user);
+
+  const filteredNav = nav.filter((item) => isNavItemAllowed(item.href, user));
 
   return (
     <>
@@ -106,7 +455,7 @@ function Sidebar({
           </button>
         </div>
         <nav className="sidebar-nav" aria-label="Uygulama menüsü">
-          {nav.map((item) => {
+          {filteredNav.map((item) => {
             const active =
               pathname === item.href ||
               (item.href !== "/dashboard" && pathname.startsWith(item.href)) ||
@@ -216,9 +565,29 @@ function Sidebar({
                     )} tarihinde yenilenecek.`
                   : "Abonelik bilgisi yükleniyor."}
               </small>
-              <button onClick={() => dispatch(showToast("Plan yönetimi açıldı."))}>
+              <a
+                href={`${SITE_BASE_URL}/fiyatlandirma`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "100%",
+                  padding: "6px 12px",
+                  fontSize: "12px",
+                  fontWeight: 650,
+                  borderRadius: "6px",
+                  background: "var(--green-600)",
+                  color: "#ffffff",
+                  textDecoration: "none",
+                  marginTop: "8px",
+                  cursor: "pointer",
+                  border: "none",
+                }}
+              >
                 Planı Yükselt
-              </button>
+              </a>
             </div>
             <Link href="/yardim" className="help-card">
               <CircleHelp />
@@ -230,22 +599,7 @@ function Sidebar({
           <PanelLeftClose />
           <span>Menüyü {collapsed ? "Genişlet" : "Daralt"}</span>
         </button>
-        <div className="sidebar-user">
-          <Image
-            src={user?.avatarUrl || "/assets/profile_farmer.png"}
-            alt={user?.name ?? ""}
-            width={42}
-            height={42}
-            unoptimized
-          />
-          {!collapsed && (
-            <span>
-              <strong>{user?.name ?? "—"}</strong>
-              <small>{user?.jobTitle ?? "Kullanıcı"}</small>
-            </span>
-          )}
-          {!collapsed && <ChevronDown />}
-        </div>
+        <UserProfileSection collapsed={collapsed} variant="sidebar" />
       </aside>
     </>
   );
@@ -256,7 +610,6 @@ function Topbar({ openAlerts }: { openAlerts: number | null }) {
   const router = useRouter();
   const mode = useAppSelector((state) => state.theme.mode);
   const search = useAppSelector((state) => state.ui.search);
-  const user = useAppSelector((state) => state.session.user);
 
   const signOut = async () => {
     await api.logout();
@@ -296,27 +649,7 @@ function Topbar({ openAlerts }: { openAlerts: number | null }) {
           <Bell />
           {!!openAlerts && <b>{openAlerts}</b>}
         </Link>
-        <Link className="topbar-user" href="/ayarlar">
-          <div className="topbar-avatar-wrap">
-            <Image
-              src={
-                user?.avatarUrl ||
-                (user?.gender === "kadin"
-                  ? "/assets/profile_farmer_female.png"
-                  : "/assets/profile_farmer.png")
-              }
-              alt=""
-              width={38}
-              height={38}
-              unoptimized
-            />
-          </div>
-          <span>
-            <strong>{user?.name ?? "—"}</strong>
-            <small>{user?.jobTitle ?? "Kullanıcı"}</small>
-          </span>
-          <ChevronDown />
-        </Link>
+        <UserProfileSection variant="topbar" />
         <button className="icon-button signout-button" onClick={signOut} aria-label="Çıkış yap">
           <LogOut />
         </button>
@@ -404,7 +737,9 @@ function GlobalOverlays() {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const authenticated = useAppSelector((state) => state.session.authenticated);
+  const user = useAppSelector((state) => state.session.user);
 
   // Oturum yoksa portal icerigi hic render edilmez.
   useEffect(() => {
@@ -420,13 +755,42 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   const openAlerts = alerts?.totals.pendingAction ?? null;
+  const isRestrictedRoute = Boolean(user && user.role !== "admin" && !isNavItemAllowed(pathname, user));
 
   return (
     <div className="app-shell">
       <Sidebar openAlerts={openAlerts} settings={settings} />
       <div className="app-frame">
         <Topbar openAlerts={openAlerts} />
-        <main className="app-main">{children}</main>
+        <main className="app-main">
+          {isRestrictedRoute ? (
+            <div style={{ padding: "3rem 1.5rem", textAlign: "center", maxWidth: "560px", margin: "2rem auto" }}>
+              <div style={{
+                width: "64px",
+                height: "64px",
+                borderRadius: "50%",
+                background: "rgba(239, 68, 68, 0.1)",
+                color: "#ef4444",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 1.25rem"
+              }}>
+                <ShieldAlert size={32} />
+              </div>
+              <h2 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "0.5rem" }}>Yetkisiz Erişim</h2>
+              <p style={{ color: "var(--muted)", lineHeight: 1.6, marginBottom: "1.5rem" }}>
+                Bu sayfaya erişim yetkiniz bulunmamaktadır. Şu anki hesabınız: <strong>{user?.name}</strong> ({user?.jobTitle || user?.role}).
+                Bu alana sadece <strong>İşletme Yöneticisi (Admin)</strong> rolüne sahip kullanıcılar erişebilir.
+              </p>
+              <button className="button button-primary" onClick={() => router.push("/dashboard")}>
+                Ana Sayfaya Dön
+              </button>
+            </div>
+          ) : (
+            children
+          )}
+        </main>
       </div>
       <GlobalOverlays />
     </div>

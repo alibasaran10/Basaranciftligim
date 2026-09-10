@@ -17,7 +17,7 @@ import { SectionHeading } from "@/components/shared/SectionHeading";
 export const metadata: Metadata = {
   title: "Fiyatlandırma",
   description:
-    "İşletmenizin ölçeğine uygun SÜRÜM yazılım ve donanım paketlerini karşılaştırın.",
+    "İşletmenizin ölçeğine uygun Basaranciftligim yazılım ve donanım paketlerini karşılaştırın.",
 };
 
 const hardware = [

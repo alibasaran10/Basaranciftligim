@@ -37,7 +37,7 @@ import { withQuery } from "@/lib/api";
 import { formatNumber, formatRelative } from "@/lib/format";
 import type { CalendarMonth, CalendarSummary } from "@/lib/types";
 import { useApi } from "@/lib/useApi";
-import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { showToast } from "@/store/slices/uiSlice";
 
 type CalendarTab = "gunum" | "notlar" | "yakindakiler";
@@ -560,10 +560,23 @@ export function CalendarView() {
     düşük: 3,
   };
 
+  const currentUser = useAppSelector((state) => state.session.user);
+  const userJob = currentUser?.jobTitle ?? "";
+  const userRole = currentUser?.role;
+
   // Filtrelenmiş ve Önceliğe & Tarihe Göre Sıralanmış Notlar
   const filteredNotes = useMemo(() => {
     return notes
       .filter((n) => {
+        // Veteriner Hekim: Sadece "Sürü & Sağlık" veya veteriner notlarını görür
+        if (userJob === "Veteriner Hekim" && userRole !== "admin") {
+          if (n.category !== "Sürü & Sağlık") return false;
+        }
+        // Ziraat Sorumlusu: Sadece "Tarla & Ekim" veya "Ekipman & Bakım" görür
+        if ((userJob === "Ziraat Sorumlusu" || userJob === "Ziraat Mühendisi") && userRole !== "admin") {
+          if (n.category !== "Tarla & Ekim" && n.category !== "Ekipman & Bakım") return false;
+        }
+
         const matchSearch =
           !noteSearch ||
           n.title.toLocaleLowerCase("tr-TR").includes(noteSearch.toLocaleLowerCase("tr-TR")) ||
@@ -579,13 +592,20 @@ export function CalendarView() {
         }
         return a.date.localeCompare(b.date); // Erken tarihli olan önce
       });
-  }, [notes, noteSearch, noteCategoryFilter]);
+  }, [notes, noteSearch, noteCategoryFilter, userJob, userRole]);
 
   // Filtrelenmiş Yakındakiler
   const filteredUpcoming = useMemo(() => {
-    if (upcomingTypeFilter === "all") return upcomingEvents;
-    return upcomingEvents.filter((u) => u.type === upcomingTypeFilter);
-  }, [upcomingEvents, upcomingTypeFilter]);
+    return upcomingEvents.filter((u) => {
+      if (userJob === "Veteriner Hekim" && userRole !== "admin") {
+        if (u.type !== "doğum" && u.type !== "veteriner" && u.type !== "aşı") return false;
+      } else if ((userJob === "Ziraat Sorumlusu" || userJob === "Ziraat Mühendisi") && userRole !== "admin") {
+        if (u.type !== "sulama" && u.type !== "hasat") return false;
+      }
+      if (upcomingTypeFilter === "all") return true;
+      return u.type === upcomingTypeFilter;
+    });
+  }, [upcomingEvents, upcomingTypeFilter, userJob, userRole]);
 
   return (
     <div className="page-stack page-enter">

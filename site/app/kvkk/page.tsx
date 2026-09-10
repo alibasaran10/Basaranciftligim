@@ -6,7 +6,7 @@ export default function KvkkPage() {
       <h2>Veri sorumlusu</h2>
       <p>
         Kişisel verileriniz 6698 sayılı Kişisel Verilerin Korunması Kanunu
-        çerçevesinde, SÜRÜM tarafından veri sorumlusu sıfatıyla işlenir.
+        çerçevesinde, Basaranciftligim tarafından veri sorumlusu sıfatıyla işlenir.
       </p>
       <h2>Haklarınız</h2>
       <p>

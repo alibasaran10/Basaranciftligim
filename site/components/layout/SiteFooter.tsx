@@ -70,8 +70,8 @@ export function SiteFooter() {
           <a href="tel:+908502550055">
             <Phone size={15} /> +90 850 255 00 55
           </a>
-          <a href="mailto:info@surum.com">
-            <Mail size={15} /> info@surum.com
+          <a href="mailto:info@basaranciftligim.com">
+            <Mail size={15} /> info@basaranciftligim.com
           </a>
           <span>
             <MapPin size={15} /> Teknoloji Geliştirme Bölgesi, Balıkesir / Türkiye
@@ -79,7 +79,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="container footer-bottom">
-        <span>© 2026 SÜRÜM. Tüm hakları saklıdır.</span>
+        <span>© 2026 Basaranciftligim. Tüm hakları saklıdır.</span>
         <div>
           <Link href="/gizlilik">Gizlilik Politikası</Link>
           <Link href="/kullanim-sartlari">Kullanım Şartları</Link>

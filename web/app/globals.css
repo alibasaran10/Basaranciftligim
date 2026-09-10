@@ -785,6 +785,12 @@ img {
   padding: 8px 9px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 10px;
+  transition: all 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.sidebar-user:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 .sidebar-user img,
@@ -792,6 +798,23 @@ img {
   flex: 0 0 auto;
   object-fit: cover;
   border-radius: 50%;
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 220ms ease;
+}
+
+.sidebar-user-info {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.sidebar-user-info:hover img {
+  transform: scale(1.08);
+  box-shadow: 0 0 0 2px var(--green-500);
 }
 
 .sidebar-user span {
@@ -811,6 +834,48 @@ img {
 
 .sidebar-user svg {
   width: 14px;
+}
+
+/* Profile Switcher Popover Animations */
+.profile-switch-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: all 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.profile-switch-item:hover:not(:disabled) {
+  background: rgba(22, 131, 70, 0.18) !important;
+  border-color: var(--green-500) !important;
+  transform: translateX(4px);
+  box-shadow: 0 4px 14px rgba(22, 131, 70, 0.2);
+}
+
+.profile-switch-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: all 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.profile-switch-btn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  transform: scale(1.12);
+  color: #24b260;
 }
 
 .app-frame {

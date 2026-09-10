@@ -20,7 +20,7 @@ import { FarmLocationSettingsCard } from "@/components/settings/FarmLocationSett
 import { ErrorState, SkeletonBlock } from "@/components/ui/AsyncState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Panel } from "@/components/ui/Panel";
-import { api } from "@/lib/api";
+import { api, SITE_BASE_URL, tokenStore } from "@/lib/api";
 import { formatDate, formatNumber } from "@/lib/format";
 import type { FarmSettings } from "@/lib/types";
 import { useApi } from "@/lib/useApi";
@@ -55,15 +55,18 @@ function ProfilePhotoSection() {
   const currentGender = currentUser?.gender || "erkek";
   const defaultAvatar = currentGender === "kadin" ? "/assets/profile_farmer_female.png" : "/assets/profile_farmer.png";
 
-  const handleGenderChange = (newGender: "erkek" | "kadin") => {
+  const handleGenderChange = async (newGender: "erkek" | "kadin") => {
     if (!currentUser) return;
     const newAvatar = newGender === "kadin" ? "/assets/profile_farmer_female.png" : "/assets/profile_farmer.png";
-    dispatch(setUser({ ...currentUser, gender: newGender, avatarUrl: newAvatar }));
+    const updatedUser = { ...currentUser, gender: newGender, avatarUrl: newAvatar };
+
+    dispatch(setUser(updatedUser));
+    tokenStore.save({ accessToken: tokenStore.access() || "" }, updatedUser);
+
     try {
-      localStorage.setItem("user_gender", newGender);
-      localStorage.setItem("user_avatar", newAvatar);
+      await api.patch("/users/me/profile", { gender: newGender, avatarUrl: newAvatar });
     } catch {
-      // Fallback
+      // Fallback if offline/mock
     }
     dispatch(showToast(`Cinsiyet ${newGender === "kadin" ? "Kadın" : "Erkek"} olarak güncellendi.`));
   };
@@ -83,14 +86,16 @@ function ProfilePhotoSection() {
     }
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       const dataUrl = event.target?.result as string;
       if (currentUser) {
-        dispatch(setUser({ ...currentUser, avatarUrl: dataUrl }));
+        const updatedUser = { ...currentUser, avatarUrl: dataUrl };
+        dispatch(setUser(updatedUser));
+        tokenStore.save({ accessToken: tokenStore.access() || "" }, updatedUser);
         try {
-          localStorage.setItem("user_avatar", dataUrl);
+          await api.patch("/users/me/profile", { avatarUrl: dataUrl });
         } catch {
-          // LocalStorage quota fallback
+          // Fallback
         }
       }
       dispatch(showToast("Profil fotoğrafınız başarıyla güncellendi."));
@@ -98,11 +103,13 @@ function ProfilePhotoSection() {
     reader.readAsDataURL(file);
   };
 
-  const handleRemovePhoto = () => {
+  const handleRemovePhoto = async () => {
     if (currentUser) {
-      dispatch(setUser({ ...currentUser, avatarUrl: defaultAvatar }));
+      const updatedUser = { ...currentUser, avatarUrl: defaultAvatar };
+      dispatch(setUser(updatedUser));
+      tokenStore.save({ accessToken: tokenStore.access() || "" }, updatedUser);
       try {
-        localStorage.removeItem("user_avatar");
+        await api.patch("/users/me/profile", { avatarUrl: defaultAvatar });
       } catch {
         // Fallback
       }
@@ -444,7 +451,18 @@ export function SettingsView() {
                   </b>
                 </span>
               </div>
-              <button className="button button-secondary">Güvenlik Ayarlarını Aç</button>
+              <div style={{ display: "flex", gap: "10px", marginTop: "14px", flexWrap: "wrap" }}>
+                <a
+                  href={`${SITE_BASE_URL}/fiyatlandirma`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="button button-primary"
+                  style={{ textDecoration: "none", fontSize: "13px", padding: "8px 14px" }}
+                >
+                  Planı Yükselt / Paketler
+                </a>
+                <button className="button button-secondary">Güvenlik Ayarlarını Aç</button>
+              </div>
             </div>
           ) : (
             <SkeletonBlock rows={5} height={30} />

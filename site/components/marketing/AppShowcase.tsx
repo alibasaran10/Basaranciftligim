@@ -23,7 +23,7 @@ export function AppShowcase() {
           <div className="screen-card screen-card--one">
             <Image
               src="/images/app-home.png"
-              alt="SÜRÜM ana ekranı"
+              alt="Basaranciftligim ana ekranı"
               fill
               unoptimized
             />

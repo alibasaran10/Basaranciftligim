@@ -46,6 +46,7 @@ export type ExtendedFieldRow = FieldRow & {
   neighborhood?: string;
   lat?: number;
   lng?: number;
+  irrigationMethod?: string;
 };
 
 export const TURKEY_CITIES: Record<string, { lat: number; lng: number; districts: string[] }> = {
@@ -255,6 +256,8 @@ export function FieldsView() {
     neighborhood: "",
     adaNo: "",
     parselNo: "",
+    areaValue: "",
+    areaUnit: "m2",
     areaDonum: "",
     soilType: "",
     crop: "",
@@ -675,6 +678,7 @@ export function FieldsView() {
     const colors = ["#10b981", "#3b82f6", "#f59e0b", "#8b5cf6", "#ec4899", "#ef4444", "#14b8a6"];
 
     return Object.entries(map).map(([label, value], idx) => ({
+      name: label,
       label,
       value,
       color: colors[idx % colors.length],
@@ -711,6 +715,7 @@ export function FieldsView() {
     return Object.entries(map)
       .filter(([_, val]) => val > 0)
       .map(([label, value]) => ({
+        name: label,
         label,
         value,
         color: colors[label] || "#10b981",
@@ -826,7 +831,7 @@ export function FieldsView() {
           label="Kritik Uyarı"
           value={formatNumber(dynamicCriticalAlertsCount)}
           meta="Acil / Kuru tarım"
-          tone={dynamicCriticalAlertsCount > 0 ? "red" : "gray"}
+          tone={dynamicCriticalAlertsCount > 0 ? "red" : undefined}
         />
       </div>
 

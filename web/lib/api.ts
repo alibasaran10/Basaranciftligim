@@ -17,6 +17,10 @@ export const API_BASE_URL =
   (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_API_URL) ||
   DEFAULT_BASE_URL;
 
+export const SITE_BASE_URL =
+  (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_SITE_URL) ||
+  "http://localhost:3000";
+
 const ACCESS_KEY = "entegre-access-token";
 const REFRESH_KEY = "entegre-refresh-token";
 const USER_KEY = "entegre-user";
@@ -94,6 +98,11 @@ export const tokenStore = {
     window.localStorage.removeItem(ACCESS_KEY);
     window.localStorage.removeItem(REFRESH_KEY);
     window.localStorage.removeItem(USER_KEY);
+    try {
+      window.dispatchEvent(new Event("auth:logout"));
+    } catch {
+      // SSR or non-browser fallback
+    }
   },
 };
 
@@ -143,6 +152,11 @@ type RequestOptions = {
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<ApiEnvelope<T>> {
   const { method = "GET", body, auth = true, signal } = options;
+
+  if (auth && !tokenStore.access()) {
+    tokenStore.clear();
+    throw new ApiError("Erişim tokeni eksik. Lütfen tekrar giriş yapın.", 401);
+  }
 
   const send = async (token: string | null) => {
     const headers: Record<string, string> = { Accept: "application/json" };

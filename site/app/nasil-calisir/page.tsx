@@ -20,7 +20,7 @@ import { SectionHeading } from "@/components/shared/SectionHeading";
 export const metadata: Metadata = {
   title: "Nasıl Çalışır?",
   description:
-    "Akıllı tasma, gateway, kamera ve bulut verilerinin SÜRÜM içinde nasıl karara dönüştüğünü görün.",
+    "Akıllı tasma, gateway, kamera ve bulut verilerinin Basaranciftligim içinde nasıl karara dönüştüğünü görün.",
 };
 
 const realTimeExamples = [
@@ -78,7 +78,7 @@ export default function HowItWorksPage() {
           <div className="page-hero-image page-hero-image--wide">
             <Image
               src="/images/how-devices.png"
-              alt="SÜRÜM çalışma sistemi"
+              alt="Basaranciftligim çalışma sistemi"
               fill
               unoptimized
               priority
@@ -157,7 +157,7 @@ export default function HowItWorksPage() {
       </section>
 
       <section className="section container">
-        <SectionHeading eyebrow="Neden SÜRÜM?" title="Somut Fayda, Ölçülebilir Sonuç" />
+        <SectionHeading eyebrow="Neden Basaranciftligim?" title="Somut Fayda, Ölçülebilir Sonuç" />
         <div className="advantages-grid">
           {advantages.map(([Icon, title, text], index) => (
             <Reveal delay={index * 60} key={title}>

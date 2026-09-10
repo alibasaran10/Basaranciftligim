@@ -28,6 +28,7 @@ export function PageHeader({
   showActions?: boolean;
   showFilter?: boolean;
   showDateChevron?: boolean;
+  hideDateFilter?: boolean;
   onPrimaryClick?: () => void;
   onFilterClick?: () => void;
 }) {

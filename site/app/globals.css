@@ -372,6 +372,108 @@ h3 {
   display: none;
 }
 
+html[data-theme="dark"] {
+  --bg: #09120f;
+  --bg-soft: #0e1a15;
+  --bg-muted: #13241d;
+  --surface: #111d18;
+  --surface-strong: #162820;
+  --text: #f4fbf6;
+  --text-soft: #c4d4c9;
+  --muted: #96a69c;
+  --line: #22372c;
+  --primary: #22c55e;
+  --primary-strong: #16a34a;
+  --primary-soft: #143223;
+  --accent: #4ade80;
+  --danger: #ff6565;
+  --warning: #ffb34b;
+  --blue: #66a7e5;
+  --shadow: 0 20px 60px rgba(0, 0, 0, 0.38);
+  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.25);
+  --header: rgba(9, 18, 15, 0.92);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 450;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  transition: background-color 250ms ease, color 250ms ease;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.035em;
+  line-height: 1.12;
+}
+
+h1 {
+  font-size: clamp(2.6rem, 5vw, 5.2rem);
+}
+
+h2 {
+  font-size: clamp(2rem, 3.6vw, 3.2rem);
+}
+
+h3 {
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
+}
+
+.container {
+  width: min(1220px, calc(100% - 40px));
+  margin-inline: auto;
+}
+
 /* Heroes */
 .hero {
   position: relative;
@@ -471,12 +573,15 @@ h3 {
 .hero-visual {
   position: relative;
   aspect-ratio: 1.09;
-  filter: drop-shadow(0 28px 35px rgba(0, 0, 0, 0.2));
+  filter: drop-shadow(0 25px 45px rgba(0, 35, 20, 0.45));
 }
 
 .hero-visual img,
 .page-hero-image img {
   object-fit: contain;
+  border-radius: 20px;
+  mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 1) 70%, rgba(0, 0, 0, 0) 99%);
+  -webkit-mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 1) 70%, rgba(0, 0, 0, 0) 99%);
 }
 
 .hero-orbit {

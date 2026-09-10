@@ -308,7 +308,7 @@ export function HerdDetailView({ animalId }: { animalId: string }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {offspring.map((child) => (
+                  {offspring.map((child: any) => (
                     <tr key={child.id} style={{ opacity: child.status === "vefat" ? 0.6 : 1 }}>
                       <td>
                         <Link className="primary-cell" href={`/suru/${child.id}`}>
