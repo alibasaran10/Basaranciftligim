@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { CheckCircle2 } from "lucide-react";
 
@@ -9,10 +9,10 @@ const plans = [
   {
     name: "Başlangıç",
     description: "Küçük işletmeler için temel dijital takip",
-    monthly: 499,
-    yearly: 399,
+    monthly: 199,
+    yearly: 149,
     features: [
-      "50 hayvana kadar",
+      "30 hayvana kadar",
       "3 kullanıcı",
       "Tarla ve sürü kayıtları",
       "Temel raporlar",
@@ -22,14 +22,12 @@ const plans = [
   {
     name: "Profesyonel",
     description: "Büyüyen çiftlikler için tam operasyon yönetimi",
-    monthly: 899,
-    yearly: 699,
+    monthly: 349,
+    yearly: 249,
     popular: true,
     features: [
-      "250 hayvana kadar",
-      "10 kullanıcı",
-      "Akıllı tasma entegrasyonu",
-      "Kamera ile görsel doğrulama",
+      "100 hayvana kadar",
+      "5 kullanıcı",
       "Gelişmiş analitik",
       "7/24 öncelikli destek",
     ],

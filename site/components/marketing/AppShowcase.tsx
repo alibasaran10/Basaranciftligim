@@ -1,5 +1,4 @@
-import {
-  BarChart3,
+﻿import {
   CheckCircle2,
   Cloud,
   Smartphone,
@@ -44,20 +43,14 @@ export function AppShowcase() {
               unoptimized
             />
           </div>
-          <div className="dashboard-mock" aria-label="Web panel özeti">
-            <div className="dashboard-top">
-              <strong>Genel Bakış</strong>
-              <span>Canlı</span>
-            </div>
-            <div className="dashboard-stats">
-              <span>56<small>Hayvan</small></span>
-              <span>32<small>Sağmal</small></span>
-              <span>14<small>Kuru</small></span>
-              <span>10<small>Buzağı</small></span>
-            </div>
-            <div className="dashboard-chart">
-              <BarChart3 />
-            </div>
+          <div className="dashboard-mock" aria-label="Web yönetim paneli">
+            <Image
+              src="/images/app-dashboard-tablet.jpg"
+              alt="Web yönetim paneli ve analiz görünümü"
+              fill
+              unoptimized
+              style={{ objectFit: "cover" }}
+            />
           </div>
         </div>
         <div className="app-showcase-copy">
