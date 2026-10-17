@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     siteName: "Basaranciftligim",
     title: "Basaranciftligim | Yenilikçi Çiftlik Yönetim Sistemi",
     description:
-      "Çiftliğinizin tüm süreçlerini akıllı tasma, kamera ve bulut teknolojileriyle tek platformdan yönetin.",
+      "Uzman veteriner hekim ve ziraat mühendisleri soru havuzuyla sorularınızı sahaya inmeden çözün; çiftliğinizi akılla yönetin.",
     images: [
       {
         url: "/og-surum.png",

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { CheckCircle2 } from "lucide-react";
 
@@ -7,43 +7,43 @@ import { openDemoModal, setBillingCycle } from "@/store/slices/uiSlice";
 
 const plans = [
   {
-    name: "Başlangıç",
-    description: "Küçük işletmeler için temel dijital takip",
+    name: "Pro Plan",
+    description: "Orta ölçekli çiftlikler ve üreticiler için uzman danışmanlık",
     monthly: 199,
-    yearly: 149,
+    yearly: 1990,
     features: [
-      "30 hayvana kadar",
-      "3 kullanıcı",
-      "Tarla ve sürü kayıtları",
-      "Temel raporlar",
-      "E-posta destek",
+      "Her ay 3 Uzman Sohbet Hakkı",
+      "Veteriner ve Ziraat Mühendisi soru havuzu",
+      "Fotoğraflı ve detaylı vaka incelemesi",
+      "Sahaya inmeden hızlı ön teşhis ve çözüm",
+      "Tarla, mahsul ve sürü takip modülleri",
     ],
   },
   {
-    name: "Profesyonel",
-    description: "Büyüyen çiftlikler için tam operasyon yönetimi",
-    monthly: 349,
-    yearly: 249,
+    name: "Plus Plan",
+    description: "Hızlı yanıt ve kapsamlı reçete desteği arayan çiftlikler için",
+    monthly: 299,
+    yearly: 2990,
     popular: true,
     features: [
-      "100 hayvana kadar",
-      "5 kullanıcı",
-      "Gelişmiş analitik",
-      "7/24 öncelikli destek",
+      "Her ay 5 Uzman Sohbet Hakkı",
+      "Öncelikli uzman yanıtı (ortalama 2 saat)",
+      "Reçete, ilaçlama ve besleme tavsiyeleri",
+      "Veteriner & Ziraat Mühendisi ortak değerlendirmesi",
+      "Gelişmiş arşiv, takip ve operasyon raporları",
     ],
   },
   {
     name: "Kurumsal",
-    description: "Büyük ve çok lokasyonlu işletmeler için",
+    description: "Büyük işletmeler, entegre tesisler ve kooperatifler için",
     monthly: 0,
     yearly: 0,
     features: [
-      "Sınırsız hayvan ve tarla",
-      "Sınırsız kullanıcı",
-      "Çoklu işletme yönetimi",
-      "API ve özel entegrasyon",
-      "Kurumsal SLA",
-      "Atanmış başarı yöneticisi",
+      "İşletmeye özel esnek / sınırsız sohbet kotası",
+      "Atanmış özel Veteriner Hekim & Ziraat Mühendisi",
+      "Çoklu lokasyon ve ekip yönetimi",
+      "Telefonla doğrudan vaka istişaresi",
+      "Öncelikli kurumsal SLA desteği",
     ],
   },
 ];
@@ -83,10 +83,10 @@ export function PricingCards() {
                 {price ? (
                   <>
                     <strong>{price.toLocaleString("tr-TR")} ₺</strong>
-                    <small>/ ay + KDV</small>
+                    <small>{cycle === "monthly" ? "/ ay + KDV" : "/ yıl + KDV"}</small>
                   </>
                 ) : (
-                  <strong>Özel Teklif</strong>
+                  <strong>Teklif Alın</strong>
                 )}
               </div>
               <button

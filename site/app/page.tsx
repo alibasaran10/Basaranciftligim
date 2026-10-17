@@ -17,7 +17,7 @@ import { SectionHeading } from "@/components/shared/SectionHeading";
 
 export const metadata: Metadata = {
   description:
-    "Sürünüzü, tarlalarınızı ve verilerinizi akıllı tasma, kamera ve bulut teknolojileriyle tek platformdan yönetin.",
+    "Uzman veteriner hekimler ve ziraat mühendisleri soru havuzuyla sorularınızı sahaya inmeden en profesyonel şekilde yanıtlasın; çiftliğinizi akılla yönetin.",
 };
 
 export default function HomePage() {
@@ -27,26 +27,26 @@ export default function HomePage() {
         <div className="hero-grid-pattern" />
         <div className="container hero-grid">
           <div className="hero-copy hero-copy--animated">
-            <span className="eyebrow">Basaranciftligim Yenilikçi Çiftlik Yönetim Sistemi</span>
+            <span className="eyebrow">Basaranciftligim Uzman Destekli Çiftlik Yönetim Sistemi</span>
             <h1>
-              Sürünüzü, Tarlalarınızı ve Verilerinizi{" "}
-              <span>Tek Platformda Yönetin</span>
+              Sorularınız Sahaya İnmeden{" "}
+              <span>Uzmanlarımızca Yanıtlansın</span>
             </h1>
             <p>
-              IoT akıllı tasma, mobil uygulama, RTSP kamera entegrasyonu ve
-              tarla/mahsul yönetimi ile çiftliğinizin tüm süreçlerini
-              dijitalleştirin.
+              Veteriner hekimler ve ziraat mühendislerinden oluşan soru
+              havuzumuzla vakalarınızı sahaya inmeden en profesyonel şekilde
+              çözün; sürü ve tarla operasyonlarınızı dijital panelden yönetin.
             </p>
             <div className="button-row">
               <DemoButton />
               <Link className="btn btn-secondary" href="/nasil-calisir">
-                <PlayCircle size={18} /> Tanıtım Videosunu İzle
+                <PlayCircle size={18} /> Nasıl Çalıştığını Görün
               </Link>
             </div>
             <div className="hero-proof">
-              <span><CheckCircle2 /> Kolay Kurulum</span>
-              <span><CheckCircle2 /> 7/24 Destek</span>
-              <span><CheckCircle2 /> Güvenli Bulut</span>
+              <span><CheckCircle2 /> 1 Sohbet Ücretsiz Hediye</span>
+              <span><CheckCircle2 /> Yetkili Uzman Kadrosu</span>
+              <span><CheckCircle2 /> Sahaya İnmeden Hızlı Çözüm</span>
             </div>
           </div>
           <div className="hero-visual hero-visual--animated">
@@ -70,7 +70,7 @@ export default function HomePage() {
         <SectionHeading
           eyebrow="Tüm ihtiyaçlarınız tek platformda"
           title="Kapsamlı Modüller ile Akıllı Yönetim"
-          description="Sahadaki günlük işlerinizi sadeleştiren, kararlarınızı veriye dönüştüren güçlü araçlar."
+          description="Sahadaki günlük işlerinizi sadeleştiren, uzman danışmanlığıyla kararlarınızı güçlendiren araçlar."
         />
         <ModuleGrid />
       </section>
@@ -79,8 +79,8 @@ export default function HomePage() {
         <div className="container">
           <SectionHeading
             eyebrow="Nasıl çalışır?"
-            title="Veriniz, Değerli Bilgiye Dönüşür"
-            description="Sensörden karara kadar kesintisiz ve güvenli veri akışı."
+            title="5 Adımda Uzman Çözüm Süreci"
+            description="Sorunuz ve vakanızdan profesyonel reçeteye kadar kesintisiz uzman desteği."
           />
           <ProcessSteps />
         </div>

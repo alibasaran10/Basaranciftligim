@@ -70,8 +70,8 @@ export function SiteFooter() {
           <a href="tel:+908502550055">
             <Phone size={15} /> +90 850 255 00 55
           </a>
-          <a href="mailto:info@basaranciftligim.com">
-            <Mail size={15} /> info@basaranciftligim.com
+          <a href="mailto:basaranciftligim@gmail.com">
+            <Mail size={15} /> basaranciftligim@gmail.com
           </a>
           <span>
             <MapPin size={15} /> Teknoloji Geliştirme Bölgesi, Balıkesir / Türkiye

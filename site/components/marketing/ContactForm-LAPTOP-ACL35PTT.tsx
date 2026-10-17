@@ -40,7 +40,7 @@ export function ContactForm() {
       <div className="contact-success">
         <CheckCircle2 />
         <h3>Mesajınız bize ulaştı</h3>
-        <p>Uzman ekibimiz bir iş günü içinde sizinle iletişime geçecek.</p>
+        <p>Uzman ekibimiz en kısa sürede aktif dönüş sağlayarak sizinle iletişime geçecektir.</p>
         <button className="btn btn-secondary" onClick={() => setSent(false)}>
           Yeni mesaj gönder
         </button>

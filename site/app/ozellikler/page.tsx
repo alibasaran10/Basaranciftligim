@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import {
   BadgeCheck,
   Boxes,
-  Camera,
   Cloud,
-  Radio,
+  FileCheck2,
+  Leaf,
   Smartphone,
+  Stethoscope,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,15 +23,15 @@ import { SectionHeading } from "@/components/shared/SectionHeading";
 export const metadata: Metadata = {
   title: "Özellikler",
   description:
-    "Tarla, sürü, stok, alarm, kamera ve bulut yönetimi için Basaranciftligim özelliklerini keşfedin.",
+    "Tarla, sürü, stok, veteriner & ziraat soru havuzu ve bulut yönetimi için Basaranciftligim özelliklerini keşfedin.",
 };
 
 const ecosystem = [
-  [Radio, "Akıllı Tasma Donanımı", "Sağlık ve aktivite takibi"],
-  [Boxes, "BLE / Gateway", "Kesintisiz yerel veri akışı"],
-  [Camera, "RTSP Kameralar", "Mevcut altyapıyla entegrasyon"],
-  [Smartphone, "Mobil Uygulama", "iOS ve Android uyumu"],
-  [Cloud, "Web Panel ve Bulut", "Her yerden güvenli erişim"],
+  [Stethoscope, "Veteriner Soru Havuzu", "Sürü sağlığı ve hızlı ön teşhis"],
+  [Leaf, "Ziraat Danışmanlığı", "Toprak, gübre ve bitki besleme rehberi"],
+  [FileCheck2, "Uzman Reçeteleri", "Sahaya inmeden bilimsel çözüm protokolü"],
+  [Smartphone, "Mobil Uygulama", "iOS ve Android uyumuyla her yerden soru iletme"],
+  [Cloud, "Web Panel ve Arşiv", "Tüm vaka geçmişinize tek noktadan erişim"],
 ] as const;
 
 export default function FeaturesPage() {
@@ -39,13 +40,13 @@ export default function FeaturesPage() {
       <section className="page-hero page-hero--farm">
         <div className="container page-hero-grid">
           <div className="hero-copy">
-            <span className="eyebrow">Tek platformda uçtan uca çiftlik yönetimi</span>
+            <span className="eyebrow">Tek platformda uzman destekli çiftlik yönetimi</span>
             <h1>
               Çiftliğiniz İçin Geliştirilmiş <span>Güçlü Özellikler</span>
             </h1>
             <p>
-              Sürü yönetimi, tarla ve mahsul takibi, akıllı tasma, kamera,
-              stok ve bulut güvenliği için ihtiyacınız olan her şey bir arada.
+              Sürü yönetimi, tarla ve mahsul takibi, veteriner hekim ve ziraat
+              mühendisi soru havuzu ile çiftliğinizin tüm ihtiyaçları bir arada.
             </p>
             <div className="button-row">
               <DemoButton />

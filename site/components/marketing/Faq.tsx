@@ -7,29 +7,29 @@ import { toggleFaq } from "@/store/slices/uiSlice";
 
 const questions = [
   {
-    question: "Mevcut kameralarımızı kullanabilir miyiz?",
+    question: "Ücretsiz sohbet hakkımı nasıl kullanabilirim?",
     answer:
-      "Evet. Standart RTSP desteği bulunan mevcut IP kameralarınızı sisteme kolayca entegre edebiliriz.",
+      "Sisteme kayıt olduğunuz anda hesabınıza otomatik olarak 1 adet ücretsiz sohbet hakkı tanımlanır. Fotoğraf, video veya vaka açıklaması ekleyerek uzman veteriner hekim veya ziraat mühendisimizle anında sohbet başlatabilirsiniz.",
   },
   {
-    question: "Tasma verileri nasıl iletilir?",
+    question: "Pro ve Plus planlardaki sohbet hakları nasıl çalışır?",
     answer:
-      "Akıllı tasmalar veriyi düşük enerji tüketimli BLE bağlantısıyla gateway cihazına, gateway ise güvenli biçimde buluta iletir.",
+      "Pro planda her ay 3 sohbet hakkı, Plus planda ise her ay 5 sohbet hakkı sunulur. Sohbet haklarınızı ister sürü sağlığı ister tarla, gübreleme ve bitki koruma alanında dilediğiniz gibi kullanabilirsiniz.",
   },
   {
-    question: "İnternet kesilirse ne olur?",
+    question: "Uzmanlar soruları ne kadar sürede yanıtlar?",
     answer:
-      "Gateway verileri yerel bellekte saklar. Bağlantı yeniden kurulduğunda kayıtlar otomatik olarak senkronize edilir.",
+      "Tüm vakalar alanında yetkili uzman veteriner hekimler ve ziraat mühendisleri tarafından incelenir. Plus plan kullanıcılarımıza ortalama 2 saat içinde öncelikli yanıt verilirken, Pro plan sohbetleri en geç aynı gün içinde detaylı raporla cevaplanır.",
   },
   {
-    question: "Kaç hayvana kadar kullanılabilir?",
+    question: "Soruma fotoğraf, video veya tahlil raporu ekleyebilir miyim?",
     answer:
-      "Basaranciftligim modüler ve ölçeklenebilir yapıdadır; küçük aile işletmelerinden binlerce hayvanlı tesislere kadar büyüyebilir.",
+      "Kesinlikle. Sohbetiniz sırasında vakanıza ait fotoğraf, video, toprak analizi veya laboratuvar test sonuçlarını doğrudan iletebilirsiniz. Uzmanlarımız sahaya inmeden sorunu kapsamlı şekilde değerlendirip size özel reçete ve eylem planı oluşturur.",
   },
   {
-    question: "Mobil uygulama hangi cihazlarda çalışır?",
+    question: "Ay içinde sohbet hakkım biterse veya daha fazla sohbete ihtiyacım olursa ne olur?",
     answer:
-      "iOS ve Android telefon/tabletlerde çalışır. Ayrıca güncel bir tarayıcı üzerinden web paneline erişebilirsiniz.",
+      "Planınızı istediğiniz an Plus plana yükseltebilir ya da büyük işletmeniz/kooperatifiniz için sınırsız sohbet kotası ve özel danışmanlık içeren Kurumsal planımıza geçiş yapabilirsiniz.",
   },
 ];
 

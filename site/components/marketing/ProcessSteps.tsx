@@ -1,38 +1,38 @@
 import {
-  Camera,
-  CloudUpload,
-  Network,
+  FileCheck2,
+  HelpCircle,
+  Microscope,
   Smartphone,
-  Wifi,
+  Users,
 } from "lucide-react";
 
 import { Reveal } from "../shared/Reveal";
 
 export const processSteps = [
   {
-    icon: Wifi,
-    title: "Akıllı Tasma ve Girişler",
-    text: "Sağlık, hareket ve üretim verileri sensörlerden ve saha ekiplerinden toplanır.",
+    icon: HelpCircle,
+    title: "Sorunuzu & Vakanızı İletin",
+    text: "Hayvan belirtileri, tarla fotoğrafları veya tahlil sonuçlarınızı sisteme yükleyin.",
   },
   {
-    icon: Network,
-    title: "Gateway ve Yerel Ağ",
-    text: "Veriler güvenli bağlantı üzerinden çiftlik merkezindeki gateway'e aktarılır.",
+    icon: Users,
+    title: "Uzman Havuzuna Yönlendirme",
+    text: "Sorunuz alanında yetkili veteriner hekim veya ziraat mühendisimize anında atanır.",
   },
   {
-    icon: Camera,
-    title: "Kamera ile Doğrulama",
-    text: "Alarm oluştuğunda RTSP kameralar ilgili alanı anlık görsel olarak doğrular.",
+    icon: Microscope,
+    title: "Detaylı & Bilimsel İnceleme",
+    text: "Uzmanlarımız sahaya inmeden önce verileri, semptomları ve görselleri titizlikle analiz eder.",
   },
   {
-    icon: CloudUpload,
-    title: "Bulut ve Veri Tabanı",
-    text: "Tüm kayıtlar şifrelenir, yedeklenir ve analiz için tek merkezde birleşir.",
+    icon: FileCheck2,
+    title: "Profesyonel Çözüm & Reçete",
+    text: "Uygulanabilir tedavi protokolü, koruyucu hekimlik veya gübreleme tavsiyeniz hazırlanır.",
   },
   {
     icon: Smartphone,
-    title: "Mobil ve Web Paneli",
-    text: "Kararlarınızı canlı bildirimler, raporlar ve grafiklerle her yerden yönetin.",
+    title: "Mobil ve Web Takip",
+    text: "Cevabınız panelinize anında iletilir, sonuçları ve süreci dilediğiniz cihazdan takip edersiniz.",
   },
 ];
 

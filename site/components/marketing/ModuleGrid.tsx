@@ -1,10 +1,10 @@
 import {
-  BellRing,
   CalendarHeart,
-  Camera,
   CloudCog,
+  FileQuestion,
   Leaf,
   Sprout,
+  Stethoscope,
   TrendingUp,
   Warehouse,
 } from "lucide-react";
@@ -15,42 +15,42 @@ export const moduleItems = [
   {
     icon: Sprout,
     title: "Tarla ve Mahsul Yönetimi",
-    text: "Arazi kayıtları, toprak analizi, sulama planı ve hasat verilerini tek ekranda yönetin.",
+    text: "Arazi kayıtları, sulama ve toprak analizi süreçlerini tek ekrandan yönetin.",
   },
   {
     icon: Leaf,
-    title: "Ekim / Hasat Takibi",
-    text: "Ekim tarihinden hasada kadar tüm üretim sürecini planlayın ve verimliliği ölçün.",
+    title: "Ekim ve Hasat Takibi",
+    text: "Ekimden hasada kadar tüm üretim sürecini planlayın ve verimi ölçün.",
   },
   {
     icon: Warehouse,
     title: "Verim ve Stok Yönetimi",
-    text: "Ürün, yem, tohum ve silo stoklarını otomatik olarak izleyin.",
+    text: "Ürün, yem, tohum ve silo stoklarınızı otomatik olarak güncel tutun.",
   },
   {
     icon: TrendingUp,
-    title: "Sürü Yönetimi",
-    text: "Hayvan kartları, sağlık, ağırlık ve verim bilgilerini güncel tutun.",
+    title: "Sürü Takip Yönetimi",
+    text: "Hayvan kartları, aşı takvimi, sağlık ve günlük verimleri izleyin.",
   },
   {
     icon: CalendarHeart,
-    title: "Tohumlama ve Doğum Takvimi",
-    text: "Kritik üreme tarihlerini planlayın, yaklaşan doğumları kaçırmayın.",
+    title: "Tohumlama & Doğum Takvimi",
+    text: "Kritik üreme tarihlerini planlayın, yaklaşan doğumları vaktinde takip edin.",
   },
   {
-    icon: BellRing,
-    title: "Kızgınlık / Stres Alarmı",
-    text: "Akıllı tasma verileriyle riskleri anlık tespit edin ve hızlı aksiyon alın.",
+    icon: Stethoscope,
+    title: "Veteriner Soru Havuzu",
+    text: "Sürü sağlığı vakalarınızı iletin, sahaya inmeden hızlı ön teşhis alın.",
   },
   {
-    icon: Camera,
-    title: "Kamera ile Görsel Doğrulama",
-    text: "RTSP kameralarla ahır, mera ve doğum alanlarını uzaktan izleyin.",
+    icon: FileQuestion,
+    title: "Ziraat Danışmanlığı",
+    text: "Toprak analizi, gübreleme ve bitki koruma sorularınızı uzmanlara yöneltin.",
   },
   {
     icon: CloudCog,
-    title: "Bulut Sunucu ve Veri Güvenliği",
-    text: "Verilerinizi güvenle saklayın, yedekleyin ve yetkili cihazlardan erişin.",
+    title: "Bulut ve Veri Güvenliği",
+    text: "Verilerinizi ve uzman raporlarınızı güvenle saklayın, her yerden erişin.",
   },
 ];
 

@@ -20,35 +20,35 @@ import { SectionHeading } from "@/components/shared/SectionHeading";
 export const metadata: Metadata = {
   title: "Nasıl Çalışır?",
   description:
-    "Akıllı tasma, gateway, kamera ve bulut verilerinin Basaranciftligim içinde nasıl karara dönüştüğünü görün.",
+    "Uzman veteriner hekim ve ziraat mühendislerinin sorularınızı ve vakalarınızı sahaya inmeden nasıl çözüme dönüştürdüğünü görün.",
 };
 
 const realTimeExamples = [
   {
     icon: BellRing,
     color: "danger",
-    title: "Kızgınlık / Stres Alarmı",
-    text: "Anormal hareket algılandığında alarm oluşturulur ve kamera görüntüsüyle doğrulanır.",
+    title: "Sürü Sağlığı & Belirti Bildirimi",
+    text: "Hayvanınızdaki semptomları ve fotoğrafları sisteme iletin, uzman veteriner hekime anında ulaşsın.",
   },
   {
     icon: Clock3,
     color: "warning",
-    title: "Doğum Yaklaşıyor",
-    text: "Biyolojik takvim yaklaşan doğumu hesaplar, işletme ekibini önceden bilgilendirir.",
+    title: "Tohumlama ve Doğum Takvimi",
+    text: "Biyolojik takvim ve uzman yönlendirmesiyle yaklaşan doğumları ve kritik dönemleri kaçırmayın.",
   },
   {
     icon: Leaf,
     color: "success",
-    title: "Hasat Sonrası Stok",
-    text: "Hasat kaydı tamamlandığında ürün ve silo stokları otomatik güncellenir.",
+    title: "Toprak ve Mahsul Danışmanlığı",
+    text: "Ziraat mühendislerimiz tahlil raporunuzu inceleyip doğrudan uygulanabilir besleme ve gübreleme reçetesi sunar.",
   },
 ] as const;
 
 const advantages = [
-  [TrendingUp, "Daha Az Kayıp", "Erken uyarılarla üretim kayıplarını azaltın."],
-  [Clock3, "Daha Hızlı Müdahale", "Kritik olaylara anında aksiyon alın."],
-  [CheckCircle2, "Daha Doğru Karar", "Raporlarla doğru zamanda doğru kararı verin."],
-  [ShieldCheck, "Güvenli Altyapı", "Şifreli, yedekli ve ölçeklenebilir bulut yapısı."],
+  [TrendingUp, "Daha Az Kayıp", "Erken uzman teşhisi ile üretim kayıplarını en aza indirin."],
+  [Clock3, "Daha Hızlı Müdahale", "Sahaya inmeden ortalama 2 saat içinde çözüm alın."],
+  [CheckCircle2, "Doğru ve Bilimsel Teşhis", "Yetkili uzmanların hazırladığı reçete ve uygulama protokolleri."],
+  [ShieldCheck, "Güvenli Arşiv", "Tüm vaka ve reçete geçmişiniz bulutta güvenle saklanır."],
 ] as const;
 
 export default function HowItWorksPage() {
@@ -57,14 +57,14 @@ export default function HowItWorksPage() {
       <section className="page-hero page-hero--how">
         <div className="container page-hero-grid">
           <div className="hero-copy">
-            <span className="eyebrow">Veriyi değere dönüştüren akıllı sistem</span>
+            <span className="eyebrow">Sorudan çözüme uzman destekli sistem</span>
             <h1>
-              Çiftliğinizde Veri <span>Nasıl Değere Dönüşür?</span>
+              Sorularınız ve Vakalarınız <span>Nasıl Çözüme Dönüşür?</span>
             </h1>
             <p>
-              Akıllı tasmalar, saha kayıtları ve kameralarınızdan gelen veriler
-              tek platformda birleşir; alarmlar, raporlar ve günlük operasyon
-              kararlarına dönüşür.
+              Sürü sağlığından tarla ve gübreleme planına kadar tüm sorularınız
+              yetkili veteriner ve ziraat mühendislerimize ulaşır; sahaya
+              inmeden güvenilir ve bilimsel çözümlere dönüşür.
             </p>
             <div className="button-row">
               <DemoButton label="Sistemi Canlı Görün" />
